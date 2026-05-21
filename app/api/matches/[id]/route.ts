@@ -3,11 +3,12 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   _: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await params;
     const match = await prisma.match.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         homeTeam: true,
         awayTeam: true,
@@ -26,12 +27,13 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await params;
     const body = await req.json();
     const match = await prisma.match.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         venue: body.venue,
         scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : undefined,

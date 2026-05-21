@@ -4,7 +4,7 @@ import { verifyToken, getTokenFromHeader } from "@/lib/auth";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const user = verifyToken(
     getTokenFromHeader(req.headers.get("authorization")) || "",
@@ -13,7 +13,8 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
 
   try {
-    const match = await prisma.match.findUnique({ where: { id: params.id } });
+    const { id } = await params;
+    const match = await prisma.match.findUnique({ where: { id: id } });
     if (!match)
       return NextResponse.json({ error: "Match not found" }, { status: 404 });
     if (match.status !== "UPCOMING")
@@ -23,15 +24,15 @@ export async function POST(
       );
 
     const updated = await prisma.match.update({
-      where: { id: params.id },
+      where: { id: id },
       data: { status: "LIVE", startedAt: new Date(), currentQuarter: 1 },
       include: { homeTeam: true, awayTeam: true, quarters: true },
     });
     // Create initial quarter records
     for (let q = 1; q <= 4; q++) {
       await prisma.quarterScore.upsert({
-        where: { matchId_quarter: { matchId: params.id, quarter: q } },
-        create: { matchId: params.id, quarter: q, homeScore: 0, awayScore: 0 },
+        where: { matchId_quarter: { matchId: id, quarter: q } },
+        create: { matchId: id, quarter: q, homeScore: 0, awayScore: 0 },
         update: {},
       });
     }

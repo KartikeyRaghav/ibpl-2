@@ -5,8 +5,9 @@ import { recalculateStandings } from "@/lib/standings";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   const user = verifyToken(
     getTokenFromHeader(req.headers.get("authorization")) || "",
   );
@@ -14,12 +15,12 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   try {
     const body = await req.json();
-    const match = await prisma.match.findUnique({ where: { id: params.id } });
+    const match = await prisma.match.findUnique({ where: { id: id } });
     if (!match || match.status !== "LIVE")
       return NextResponse.json({ error: "Match not live" }, { status: 400 });
 
     const updated = await prisma.match.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         status: "FINISHED",
         endedAt: new Date(),

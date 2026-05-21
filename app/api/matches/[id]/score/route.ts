@@ -22,7 +22,7 @@ const foulSchema = z.object({
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const user = verifyToken(
     getTokenFromHeader(req.headers.get("authorization")) || "",
@@ -31,9 +31,10 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
 
   try {
+    const { id } = await params;
     const body = await req.json();
     const match = await prisma.match.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: { quarters: true },
     });
     if (!match)
@@ -51,11 +52,11 @@ export async function POST(
       if (parsed.playerId) {
         const stat = await prisma.playerMatchStat.upsert({
           where: {
-            playerId_matchId: { playerId: parsed.playerId, matchId: params.id },
+            playerId_matchId: { playerId: parsed.playerId, matchId: id },
           },
           create: {
             playerId: parsed.playerId,
-            matchId: params.id,
+            matchId: id,
             teamId:
               parsed.teamSide === "home" ? match.homeTeamId : match.awayTeamId,
             fouls: 1,
@@ -79,7 +80,7 @@ export async function POST(
       }
       await prisma.matchEvent.create({
         data: {
-          matchId: params.id,
+          matchId: id,
           quarter: parsed.quarter,
           minute: parsed.minute,
           type: parsed.eventType as any,
@@ -100,17 +101,17 @@ export async function POST(
         : match.awayScore;
 
       await prisma.match.update({
-        where: { id: params.id },
+        where: { id: id },
         data: { homeScore: newHomeScore, awayScore: newAwayScore },
       });
 
       // Update quarter score
       await prisma.quarterScore.upsert({
         where: {
-          matchId_quarter: { matchId: params.id, quarter: parsed.quarter },
+          matchId_quarter: { matchId: id, quarter: parsed.quarter },
         },
         create: {
-          matchId: params.id,
+          matchId: id,
           quarter: parsed.quarter,
           homeScore: isHome ? parsed.points : 0,
           awayScore: !isHome ? parsed.points : 0,
@@ -124,11 +125,11 @@ export async function POST(
       if (parsed.playerId) {
         await prisma.playerMatchStat.upsert({
           where: {
-            playerId_matchId: { playerId: parsed.playerId, matchId: params.id },
+            playerId_matchId: { playerId: parsed.playerId, matchId: id },
           },
           create: {
             playerId: parsed.playerId,
-            matchId: params.id,
+            matchId: id,
             teamId: isHome ? match.homeTeamId : match.awayTeamId,
             points: parsed.points,
             twoPointers: parsed.eventType === "TWO_POINTER" ? 1 : 0,
@@ -151,7 +152,7 @@ export async function POST(
 
       await prisma.matchEvent.create({
         data: {
-          matchId: params.id,
+          matchId: id,
           quarter: parsed.quarter,
           minute: parsed.minute,
           type: parsed.eventType as any,
@@ -164,7 +165,7 @@ export async function POST(
 
     // Return updated match
     const updated = await prisma.match.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         homeTeam: true,
         awayTeam: true,
@@ -182,7 +183,7 @@ export async function POST(
 // Advance quarter
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const user = verifyToken(
     getTokenFromHeader(req.headers.get("authorization")) || "",
@@ -190,12 +191,13 @@ export async function PATCH(
   if (!user || user.role !== "ADMIN")
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   try {
-    const match = await prisma.match.findUnique({ where: { id: params.id } });
+    const { id } = await params;
+    const match = await prisma.match.findUnique({ where: { id: id } });
     if (!match || match.status !== "LIVE")
       return NextResponse.json({ error: "Match not live" }, { status: 400 });
     const nextQ = match.currentQuarter + 1;
     const updated = await prisma.match.update({
-      where: { id: params.id },
+      where: { id: id },
       data: { currentQuarter: Math.min(nextQ, 4) },
       include: {
         homeTeam: true,

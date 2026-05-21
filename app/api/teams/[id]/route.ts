@@ -3,11 +3,12 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   _: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await params;
     const team = await prisma.team.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         players: {
           where: { isActive: true },
@@ -35,12 +36,13 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const body = await req.json();
+    const { id } = await params;
     const team = await prisma.team.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name: body.name,
         shortName: body.shortName,
@@ -58,10 +60,11 @@ export async function PUT(
 
 export async function DELETE(
   _: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    await prisma.team.delete({ where: { id: params.id } });
+    const { id } = await params;
+    await prisma.team.delete({ where: { id: id } });
     return NextResponse.json({ data: { success: true } });
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 400 });
