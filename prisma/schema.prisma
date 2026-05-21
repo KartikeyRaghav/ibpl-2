@@ -1,0 +1,214 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Auth ────────────────────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(VIEWER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  ADMIN
+  VIEWER
+}
+
+// ─── Tournament ───────────────────────────────────────────────────────────────
+
+model TournamentSettings {
+  id              String  @id @default(cuid())
+  name            String  @default("IBPL Season 1")
+  season          Int     @default(1)
+  quartersPerGame Int     @default(4)
+  quarterDuration Int     @default(10) // minutes
+  shotClock       Int     @default(24) // seconds
+  foulLimit       Int     @default(5)
+  teamFoulReset   Int     @default(4) // per quarter
+  isActive        Boolean @default(true)
+}
+
+// ─── Teams ────────────────────────────────────────────────────────────────────
+
+model Team {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  shortName String   @unique // "TB", "HH"
+  color     String   @default("#F47B20")
+  logoUrl   String?
+  captainId String?
+  coach     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  players     Player[]
+  homeMatches Match[]       @relation("HomeTeam")
+  awayMatches Match[]       @relation("AwayTeam")
+  standing    TeamStanding?
+
+  @@index([shortName])
+}
+
+// ─── Players ──────────────────────────────────────────────────────────────────
+
+model Player {
+  id           String   @id @default(cuid())
+  name         String
+  jerseyNumber Int
+  position     Position
+  photoUrl     String?
+  isActive     Boolean  @default(true)
+  teamId       String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  team       Team              @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  matchStats PlayerMatchStat[]
+
+  @@unique([teamId, jerseyNumber])
+  @@index([teamId])
+}
+
+enum Position {
+  PG // Point Guard
+  SG // Shooting Guard
+  SF // Small Forward
+  PF // Power Forward
+  C // Center
+}
+
+// ─── Matches ──────────────────────────────────────────────────────────────────
+
+model Match {
+  id             String      @id @default(cuid())
+  matchNumber    Int         @unique
+  homeTeamId     String
+  awayTeamId     String
+  homeScore      Int         @default(0)
+  awayScore      Int         @default(0)
+  status         MatchStatus @default(UPCOMING)
+  venue          String      @default("IIT Indore Sports Complex")
+  scheduledAt    DateTime
+  startedAt      DateTime?
+  endedAt        DateTime?
+  currentQuarter Int         @default(1)
+  leg            Int         @default(1) // 1 = first leg, 2 = return leg
+  mvpPlayerId    String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  homeTeam    Team              @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam    Team              @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  quarters    QuarterScore[]
+  playerStats PlayerMatchStat[]
+  events      MatchEvent[]
+
+  @@index([status])
+  @@index([homeTeamId])
+  @@index([awayTeamId])
+}
+
+enum MatchStatus {
+  UPCOMING
+  LIVE
+  FINISHED
+  CANCELLED
+}
+
+model QuarterScore {
+  id        String @id @default(cuid())
+  matchId   String
+  quarter   Int // 1-4
+  homeScore Int    @default(0)
+  awayScore Int    @default(0)
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@unique([matchId, quarter])
+  @@index([matchId])
+}
+
+// ─── Player Stats Per Match ───────────────────────────────────────────────────
+
+model PlayerMatchStat {
+  id       String @id @default(cuid())
+  playerId String
+  matchId  String
+  teamId   String
+
+  points         Int     @default(0)
+  twoPointers    Int     @default(0) // made
+  threePointers  Int     @default(0) // made
+  freeThrows     Int     @default(0) // made
+  fouls          Int     @default(0)
+  technicalFouls Int     @default(0)
+  isDisqualified Boolean @default(false) // >= 5 fouls
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  match  Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, matchId])
+  @@index([matchId])
+  @@index([playerId])
+}
+
+// ─── Match Events (timeline) ──────────────────────────────────────────────────
+
+model MatchEvent {
+  id        String    @id @default(cuid())
+  matchId   String
+  quarter   Int
+  minute    Float // time in quarter when event happened
+  type      EventType
+  teamId    String?
+  playerId  String?
+  value     Int? // points for scoring events
+  note      String?
+  createdAt DateTime  @default(now())
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@index([matchId])
+}
+
+enum EventType {
+  TWO_POINTER
+  THREE_POINTER
+  FREE_THROW
+  FOUL
+  TECHNICAL_FOUL
+  UNSPORTSMANLIKE_FOUL
+  SUBSTITUTION
+  QUARTER_END
+  TIMEOUT
+}
+
+// ─── Standings ────────────────────────────────────────────────────────────────
+
+model TeamStanding {
+  id            String   @id @default(cuid())
+  teamId        String   @unique
+  matchesPlayed Int      @default(0)
+  wins          Int      @default(0)
+  losses        Int      @default(0)
+  points        Int      @default(0) // 2 per win
+  pointsFor     Int      @default(0) // total scored
+  pointsAgainst Int      @default(0) // total conceded
+  pointDiff     Int      @default(0) // pointsFor - pointsAgainst
+  rank          Int      @default(0)
+  updatedAt     DateTime @updatedAt
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+}
