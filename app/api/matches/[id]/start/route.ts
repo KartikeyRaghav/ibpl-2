@@ -14,21 +14,24 @@ export async function POST(
 
   try {
     const { id } = await params;
-    const match = await prisma.match.findUnique({ where: { id: Number(id) } });
-    if (!match)
+    const existing = await prisma.match.findUnique({
+      where: { id: Number(id) },
+    });
+    if (!existing)
       return NextResponse.json({ error: "Match not found" }, { status: 404 });
-    if (match.status !== "UPCOMING")
+    if (existing.status !== "UPCOMING")
       return NextResponse.json(
         { error: "Match already started" },
         { status: 400 },
       );
 
-    const updated = await prisma.match.update({
+    // Update match to LIVE
+    await prisma.match.update({
       where: { id: Number(id) },
       data: { status: "LIVE", startedAt: new Date(), currentQuarter: 1 },
-      include: { homeTeam: true, awayTeam: true, quarters: true },
     });
-    // Create initial quarter records
+
+    // Initialise all 4 quarter score rows
     for (let q = 1; q <= 4; q++) {
       await prisma.quarterScore.upsert({
         where: { matchId_quarter: { matchId: Number(id), quarter: q } },
@@ -36,6 +39,32 @@ export async function POST(
         update: {},
       });
     }
+
+    const updated = await prisma.match.findUnique({
+      where: { id: Number(id) },
+      include: {
+        homeTeam: {
+          include: {
+            players: {
+              where: { isActive: true },
+              orderBy: { jerseyNumber: "asc" },
+            },
+          },
+        },
+        awayTeam: {
+          include: {
+            players: {
+              where: { isActive: true },
+              orderBy: { jerseyNumber: "asc" },
+            },
+          },
+        },
+        quarters: { orderBy: { quarter: "asc" } },
+        playerStats: { include: { player: true } },
+        events: { orderBy: { createdAt: "desc" }, take: 30 },
+      },
+    });
+
     return NextResponse.json({ data: updated });
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });

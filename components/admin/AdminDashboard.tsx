@@ -18,11 +18,20 @@ import {
   LogOut,
   PlusCircle,
   ListChecks,
+  PlusSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 
 type Tab = "overview" | "matches" | "schedule" | "teams" | "players";
+
+const TABS: { id: Tab; label: string; icon: any }[] = [
+  { id: "overview", label: "Overview", icon: LayoutDashboard },
+  { id: "matches", label: "Matches", icon: Calendar },
+  { id: "schedule", label: "Schedule", icon: PlusSquare },
+  { id: "teams", label: "Teams", icon: Users },
+  { id: "players", label: "Players", icon: User },
+];
 
 export function AdminDashboard() {
   const { user, logout, token } = useAuth();
@@ -56,7 +65,7 @@ export function AdminDashboard() {
         upcoming: m.filter((x: Match) => x.status === "UPCOMING").length,
       });
     } catch (e: any) {
-      toast.error("Failed to load data: " + e.message);
+      toast.error("Failed to load: " + e.message);
     } finally {
       setLoading(false);
     }
@@ -72,29 +81,23 @@ export function AdminDashboard() {
     toast.success("Logged out");
   };
 
-  const TABS: { id: Tab; label: string; icon: any }[] = [
-    { id: "overview", label: "Overview", icon: LayoutDashboard },
-    { id: "matches", label: "Matches", icon: Calendar },
-    { id: "schedule", label: "Schedule", icon: PlusCircle },
-    { id: "teams", label: "Teams", icon: Users },
-    { id: "players", label: "Players", icon: User },
-  ];
-
   return (
     <div className="min-h-[calc(100vh-56px)] bg-gray-950">
       {/* Admin top bar */}
       <div className="bg-gray-900 border-b border-gray-800 px-4 py-3 flex items-center gap-3">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-orange-500 flex items-center justify-center text-white text-xs font-black">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-7 h-7 rounded-lg bg-orange-500 flex items-center justify-center text-white text-xs font-black shrink-0">
             A
           </div>
-          <div>
-            <div className="text-white text-sm font-bold">{user?.name}</div>
+          <div className="min-w-0">
+            <div className="text-white text-sm font-bold truncate">
+              {user?.name}
+            </div>
             <div className="text-gray-500 text-xs">Administrator</div>
           </div>
         </div>
-        <div className="ml-auto flex items-center gap-2">
-          <span className="text-xs text-green-400 bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-full font-semibold">
+        <div className="ml-auto flex items-center gap-2 shrink-0">
+          <span className="hidden sm:inline text-xs text-green-400 bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-full font-semibold">
             ✓ JWT Active
           </span>
           <button
@@ -107,22 +110,22 @@ export function AdminDashboard() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* Tab nav */}
-        <div className="flex gap-1 mb-6 bg-gray-900 border border-gray-800 rounded-xl p-1 overflow-x-auto">
+      <div className="max-w-7xl mx-auto px-4 py-5 sm:py-6">
+        {/* Tab nav — scrollable on mobile */}
+        <div className="flex gap-1 mb-5 sm:mb-6 bg-gray-900 border border-gray-800 rounded-xl p-1 overflow-x-auto scrollbar-hide">
           {TABS.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               onClick={() => setTab(id)}
               className={cn(
-                "flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-colors flex-1 justify-center",
+                "flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors flex-1 justify-center",
                 tab === id
                   ? "bg-orange-500 text-white"
                   : "text-gray-400 hover:text-white hover:bg-gray-800",
               )}
             >
-              <Icon className="w-4 h-4" />
-              {label}
+              <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+              <span>{label}</span>
             </button>
           ))}
         </div>
@@ -140,16 +143,9 @@ export function AdminDashboard() {
             {tab === "schedule" && (
               <ScheduleTab teams={teams} onSuccess={load} />
             )}
-            {tab === "teams" && (
-              <TeamsTab teams={teams} onSuccess={load} token={token!} />
-            )}
+            {tab === "teams" && <TeamsTab teams={teams} onSuccess={load} />}
             {tab === "players" && (
-              <PlayersTab
-                teams={teams}
-                players={players}
-                onSuccess={load}
-                token={token!}
-              />
+              <PlayersTab teams={teams} players={players} onSuccess={load} />
             )}
           </>
         )}
@@ -158,7 +154,7 @@ export function AdminDashboard() {
   );
 }
 
-// ─── Overview tab ─────────────────────────────────────────────────────────────
+// ─── Overview ─────────────────────────────────────────────────────────────────
 
 function OverviewTab({
   stats,
@@ -174,9 +170,9 @@ function OverviewTab({
     .slice(0, 5);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 sm:space-y-6">
       {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[
           {
             label: "Total Matches",
@@ -205,9 +201,11 @@ function OverviewTab({
         ].map(({ label, value, color, bg }) => (
           <div
             key={label}
-            className={`${bg} border border-gray-800 rounded-xl p-5`}
+            className={`${bg} border border-gray-800 rounded-xl p-4 sm:p-5`}
           >
-            <div className={`font-black text-4xl ${color}`}>{value}</div>
+            <div className={`font-black text-3xl sm:text-4xl ${color}`}>
+              {value}
+            </div>
             <div className="text-gray-500 text-xs uppercase tracking-wide mt-1">
               {label}
             </div>
@@ -215,7 +213,7 @@ function OverviewTab({
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6">
         {/* Teams summary */}
         <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-800 font-bold text-white text-sm flex items-center gap-2">
@@ -228,19 +226,21 @@ function OverviewTab({
               className="flex items-center gap-3 px-4 py-3 border-b border-gray-800/50 last:border-0"
             >
               <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-black text-xs"
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-black text-xs shrink-0"
                 style={{ backgroundColor: t.color }}
               >
                 {t.shortName}
               </div>
-              <div className="flex-1">
-                <div className="text-white text-sm font-semibold">{t.name}</div>
+              <div className="flex-1 min-w-0">
+                <div className="text-white text-sm font-semibold truncate">
+                  {t.name}
+                </div>
                 <div className="text-gray-500 text-xs">
-                  {t.players?.length ?? 0} players · Coach: {t.coach ?? "TBD"}
+                  {t.players?.length ?? 0} players · {t.coach ?? "TBD"}
                 </div>
               </div>
               {t.standing && (
-                <span className="bg-orange-500/20 text-orange-400 font-black text-sm px-2 py-0.5 rounded">
+                <span className="bg-orange-500/20 text-orange-400 font-black text-sm px-2 py-0.5 rounded shrink-0">
                   {t.standing.points} pts
                 </span>
               )}
@@ -259,11 +259,11 @@ function OverviewTab({
               key={p.id}
               className="flex items-center gap-3 px-4 py-3 border-b border-gray-800/50 last:border-0"
             >
-              <span className="font-black text-lg text-orange-500 w-5">
+              <span className="font-black text-lg text-orange-500 w-5 shrink-0">
                 {i + 1}
               </span>
               <div
-                className="w-8 h-8 rounded-full flex items-center justify-center text-white font-black text-xs"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-white font-black text-xs shrink-0"
                 style={{ backgroundColor: p.team?.color }}
               >
                 {p.name
@@ -280,7 +280,7 @@ function OverviewTab({
                   #{p.jerseyNumber} · {p.team?.shortName}
                 </div>
               </div>
-              <div className="text-right">
+              <div className="text-right shrink-0">
                 <div className="font-black text-white">
                   {p.totalPoints ?? 0}
                 </div>
@@ -301,7 +301,7 @@ function OverviewTab({
   );
 }
 
-// ─── Matches tab ──────────────────────────────────────────────────────────────
+// ─── Matches ──────────────────────────────────────────────────────────────────
 
 function MatchesTab({
   matches,
@@ -313,7 +313,9 @@ function MatchesTab({
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-bold text-white text-lg">Match Management</h2>
+        <h2 className="font-bold text-white text-base sm:text-lg">
+          Match Management
+        </h2>
         <button
           onClick={onRefresh}
           className="text-orange-400 hover:text-orange-300 text-sm font-semibold"
@@ -326,7 +328,7 @@ function MatchesTab({
   );
 }
 
-// ─── Schedule tab ─────────────────────────────────────────────────────────────
+// ─── Schedule ─────────────────────────────────────────────────────────────────
 
 function ScheduleTab({
   teams,
@@ -337,32 +339,32 @@ function ScheduleTab({
 }) {
   return (
     <div className="max-w-lg">
-      <h2 className="font-bold text-white text-lg mb-4">Schedule a Match</h2>
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+      <h2 className="font-bold text-white text-base sm:text-lg mb-4">
+        Schedule a Match
+      </h2>
+      <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 sm:p-5">
         <AdminScheduleForm teams={teams} onSuccess={onSuccess} />
       </div>
     </div>
   );
 }
 
-// ─── Teams tab ────────────────────────────────────────────────────────────────
+// ─── Teams ────────────────────────────────────────────────────────────────────
 
 function TeamsTab({
   teams,
   onSuccess,
-  token,
 }: {
   teams: Team[];
   onSuccess: () => void;
-  token: string;
 }) {
+  const { token } = useAuth();
   const [adding, setAdding] = useState(false);
-  const { token: authToken } = useAuth();
 
   const deleteTeam = async (id: number) => {
     if (!confirm("Delete this team? This cannot be undone.")) return;
     try {
-      await api.deleteTeam(id, authToken!);
+      await api.deleteTeam(id, token!);
       toast.success("Team deleted");
       onSuccess();
     } catch (e: any) {
@@ -371,20 +373,23 @@ function TeamsTab({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 sm:space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="font-bold text-white text-lg">Team Management</h2>
+        <h2 className="font-bold text-white text-base sm:text-lg">
+          Team Management
+        </h2>
         <button
           onClick={() => setAdding(!adding)}
-          className="flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+          className="flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-3 sm:px-4 py-2 rounded-lg transition-colors"
         >
           <PlusCircle className="w-4 h-4" />
-          New Team
+          <span className="hidden sm:inline">New Team</span>
+          <span className="sm:hidden">Add</span>
         </button>
       </div>
 
       {adding && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 sm:p-5">
           <h3 className="font-bold text-white text-sm mb-4">Create Team</h3>
           <AdminTeamForm
             onSuccess={() => {
@@ -399,33 +404,33 @@ function TeamsTab({
         {teams.map((t: any) => (
           <div
             key={t.id}
-            className="flex items-center gap-4 px-4 py-4 border-b border-gray-800/50 last:border-0"
+            className="flex items-center gap-3 sm:gap-4 px-4 py-4 border-b border-gray-800/50 last:border-0"
           >
             <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-sm shrink-0"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-white font-black text-sm shrink-0"
               style={{ backgroundColor: t.color }}
             >
               {t.shortName}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-white font-bold text-sm">{t.name}</div>
+              <div className="text-white font-bold text-sm truncate">
+                {t.name}
+              </div>
               <div className="text-gray-500 text-xs">
-                {t.players?.length ?? 0} players · Coach: {t.coach ?? "TBD"}
+                {t.players?.length ?? 0} players · {t.coach ?? "TBD"}
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => deleteTeam(t.id)}
-                className="text-gray-600 hover:text-red-400 text-xs px-3 py-1.5 border border-gray-700 hover:border-red-700 rounded-lg transition-colors"
-              >
-                Delete
-              </button>
-            </div>
+            <button
+              onClick={() => deleteTeam(t.id)}
+              className="text-gray-600 hover:text-red-400 text-xs px-2.5 sm:px-3 py-1.5 border border-gray-700 hover:border-red-700 rounded-lg transition-colors shrink-0"
+            >
+              Delete
+            </button>
           </div>
         ))}
         {teams.length === 0 && (
           <div className="px-4 py-10 text-center text-gray-600 text-sm">
-            No teams yet. Create one above.
+            No teams yet.
           </div>
         )}
       </div>
@@ -433,31 +438,29 @@ function TeamsTab({
   );
 }
 
-// ─── Players tab ──────────────────────────────────────────────────────────────
+// ─── Players ──────────────────────────────────────────────────────────────────
 
 function PlayersTab({
   teams,
   players,
   onSuccess,
-  token,
 }: {
   teams: Team[];
   players: any[];
   onSuccess: () => void;
-  token: string;
 }) {
+  const { token } = useAuth();
   const [adding, setAdding] = useState(false);
   const [teamFilter, setTeamFilter] = useState("");
-  const { token: authToken } = useAuth();
 
   const filtered = teamFilter
     ? players.filter((p) => p.teamId === teamFilter)
     : players;
 
   const removePlayer = async (id: number) => {
-    if (!confirm("Remove this player? (soft delete — stats preserved)")) return;
+    if (!confirm("Remove this player? (stats preserved)")) return;
     try {
-      await api.deletePlayer(id, authToken!);
+      await api.deletePlayer(id, token!);
       toast.success("Player removed");
       onSuccess();
     } catch (e: any) {
@@ -466,20 +469,23 @@ function PlayersTab({
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 sm:space-y-5">
       <div className="flex items-center justify-between">
-        <h2 className="font-bold text-white text-lg">Player Management</h2>
+        <h2 className="font-bold text-white text-base sm:text-lg">
+          Player Management
+        </h2>
         <button
           onClick={() => setAdding(!adding)}
-          className="flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+          className="flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-3 sm:px-4 py-2 rounded-lg transition-colors"
         >
           <PlusCircle className="w-4 h-4" />
-          Add Player
+          <span className="hidden sm:inline">Add Player</span>
+          <span className="sm:hidden">Add</span>
         </button>
       </div>
 
       {adding && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 sm:p-5">
           <h3 className="font-bold text-white text-sm mb-4">Add New Player</h3>
           <AdminPlayerForm
             teams={teams}
@@ -491,7 +497,7 @@ function PlayersTab({
         </div>
       )}
 
-      {/* Filter by team */}
+      {/* Team filter chips */}
       <div className="flex gap-2 flex-wrap">
         <button
           onClick={() => setTeamFilter("")}
@@ -502,7 +508,7 @@ function PlayersTab({
               : "bg-gray-900 text-gray-400 border-gray-700 hover:border-gray-500",
           )}
         >
-          All Teams
+          All
         </button>
         {teams.map((t) => (
           <button
@@ -514,7 +520,7 @@ function PlayersTab({
               "px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors",
               teamFilter === String(t.id)
                 ? "text-white border-transparent"
-                : "bg-gray-900 text-gray-400 border-gray-700",
+                : "bg-gray-900 text-gray-400 border-gray-700 hover:border-gray-500",
             )}
             style={
               teamFilter === String(t.id)
@@ -525,6 +531,9 @@ function PlayersTab({
             {t.shortName}
           </button>
         ))}
+        <span className="ml-auto text-gray-600 text-xs self-center">
+          {filtered.length} players
+        </span>
       </div>
 
       <AdminPlayerRoster

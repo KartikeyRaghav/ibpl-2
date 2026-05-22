@@ -7,7 +7,7 @@ import { MatchCard } from "@/components/fixtures/MatchCard";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import Link from "next/link";
 
-export const revalidate = 30; // ISR: revalidate every 30s
+export const revalidate = 30;
 
 export default async function HomePage() {
   const [
@@ -61,7 +61,6 @@ export default async function HomePage() {
     }),
   ]);
 
-  // Compute aggregates
   const playersWithStats = players
     .map((p) => ({
       ...p,
@@ -74,49 +73,47 @@ export default async function HomePage() {
     }))
     .sort((a, b) => b.totalPoints - a.totalPoints);
 
-  const serialized = (data: any) => JSON.parse(JSON.stringify(data));
+  const s = (data: any) => JSON.parse(JSON.stringify(data));
 
   return (
     <div>
-      <HeroSection settings={serialized(settings)} />
+      <HeroSection settings={s(settings)} />
 
-      <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8 space-y-6 sm:space-y-8">
         {/* Live matches */}
         {liveMatches.length > 0 && (
           <section>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-black text-white text-lg uppercase tracking-wide flex items-center gap-2 before:block before:w-1 before:h-5 before:bg-red-500 before:rounded">
-                Live Now
-              </h2>
-            </div>
+            <h2 className="font-black text-white text-base sm:text-lg uppercase tracking-wide flex items-center gap-2 mb-3 before:block before:w-1 before:h-5 before:bg-red-500 before:rounded">
+              Live Now
+            </h2>
             <div className="space-y-3">
               {liveMatches.map((m) => (
-                <LiveMatchBanner key={m.id} match={serialized(m)} />
+                <LiveMatchBanner key={m.id} match={s(m)} />
               ))}
             </div>
           </section>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left column */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Recent results */}
+        {/* Main grid — stacks on mobile, side-by-side on lg */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
+          {/* Left: matches */}
+          <div className="lg:col-span-2 space-y-5 sm:space-y-6">
             <section>
               <div className="flex items-center justify-between mb-3">
-                <h2 className="font-black text-white text-lg uppercase tracking-wide flex items-center gap-2 before:block before:w-1 before:h-5 before:bg-orange-500 before:rounded">
+                <h2 className="font-black text-white text-base sm:text-lg uppercase tracking-wide flex items-center gap-2 before:block before:w-1 before:h-5 before:bg-orange-500 before:rounded">
                   Recent Results
                 </h2>
                 <Link
                   href="/fixtures?status=FINISHED"
                   className="text-orange-400 text-sm hover:text-orange-300"
                 >
-                  All results →
+                  All →
                 </Link>
               </div>
               <div className="space-y-3">
                 {recentMatches.length > 0 ? (
                   recentMatches.map((m) => (
-                    <MatchCard key={m.id} match={serialized(m)} />
+                    <MatchCard key={m.id} match={s(m)} />
                   ))
                 ) : (
                   <div className="text-gray-600 text-sm py-8 text-center border border-gray-800 rounded-xl">
@@ -126,11 +123,10 @@ export default async function HomePage() {
               </div>
             </section>
 
-            {/* Upcoming */}
             <section>
               <div className="flex items-center justify-between mb-3">
-                <h2 className="font-black text-white text-lg uppercase tracking-wide flex items-center gap-2 before:block before:w-1 before:h-5 before:bg-blue-500 before:rounded">
-                  Upcoming Matches
+                <h2 className="font-black text-white text-base sm:text-lg uppercase tracking-wide flex items-center gap-2 before:block before:w-1 before:h-5 before:bg-blue-500 before:rounded">
+                  Upcoming
                 </h2>
                 <Link
                   href="/fixtures?status=UPCOMING"
@@ -142,7 +138,7 @@ export default async function HomePage() {
               <div className="space-y-3">
                 {upcomingMatches.length > 0 ? (
                   upcomingMatches.map((m) => (
-                    <MatchCard key={m.id} match={serialized(m)} />
+                    <MatchCard key={m.id} match={s(m)} />
                   ))
                 ) : (
                   <div className="text-gray-600 text-sm py-8 text-center border border-gray-800 rounded-xl">
@@ -153,9 +149,8 @@ export default async function HomePage() {
             </section>
           </div>
 
-          {/* Right column */}
-          <div className="space-y-6">
-            {/* Standings */}
+          {/* Right: standings + top scorers */}
+          <div className="space-y-5 sm:space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Points Table</CardTitle>
@@ -163,13 +158,12 @@ export default async function HomePage() {
                   href="/standings"
                   className="text-orange-400 text-xs hover:text-orange-300"
                 >
-                  Full table →
+                  Full →
                 </Link>
               </CardHeader>
-              <MiniStandings standings={serialized(standings)} />
+              <MiniStandings standings={s(standings)} />
             </Card>
 
-            {/* Top scorers */}
             <Card>
               <CardHeader>
                 <CardTitle>Top Scorers</CardTitle>
@@ -181,7 +175,7 @@ export default async function HomePage() {
                 </Link>
               </CardHeader>
               <CardBody className="p-2">
-                <TopScorers players={serialized(playersWithStats)} />
+                <TopScorers players={s(playersWithStats)} />
               </CardBody>
             </Card>
           </div>

@@ -20,17 +20,19 @@ export function AdminMatchManager({
   const [expanded, setExpanded] = useState<number | null>(null);
   const [busy, setBusy] = useState<number | null>(null);
 
-  const updateMatch = useCallback((updated: Match) => {
-    setMatches((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));
-  }, []);
-
-  const toggle = (id: number) =>
-    setExpanded((prev) => (prev === id ? null : id));
+  const updateMatch = useCallback(
+    (updated: Match) =>
+      setMatches((prev) =>
+        prev.map((m) => (m.id === updated.id ? updated : m)),
+      ),
+    [],
+  );
+  const toggle = (id: number) => setExpanded((p) => (p === id ? null : id));
 
   const startMatch = async (matchId: number) => {
     setBusy(matchId);
     try {
-      const updated: Match = await api.startMatch(matchId, token!);
+      const updated: Match = await api.startMatch(Number(matchId), token!);
       updateMatch(updated);
       setExpanded(matchId);
       toast.success("Match started — live scoring enabled");
@@ -42,13 +44,8 @@ export function AdminMatchManager({
   };
 
   const finishMatch = async (match: Match) => {
-    if (
-      !confirm(
-        `Finish match: ${match.homeTeam.name} vs ${match.awayTeam.name}?`,
-      )
-    )
+    if (!confirm(`Finish: ${match.homeTeam.name} vs ${match.awayTeam.name}?`))
       return;
-    // Auto-MVP = top scorer
     const topScorer = (match.playerStats ?? [])
       .slice()
       .sort((a, b) => b.points - a.points)[0];
@@ -56,7 +53,7 @@ export function AdminMatchManager({
     try {
       const updated: Match = await api.finishMatch(
         match.id,
-        { mvpPlayerId: Number(topScorer?.playerId) ?? null },
+        { mvpPlayerId: topScorer?.playerId ?? null },
         token!,
       );
       updateMatch(updated);
@@ -92,23 +89,21 @@ export function AdminMatchManager({
                 className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden"
               >
                 {/* Match row */}
-                <div className="flex items-center gap-3 p-4">
-                  {/* Home team */}
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4">
+                  <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
                     <TeamDot
                       color={match.homeTeam.color}
                       shortName={match.homeTeam.shortName}
                     />
-                    <span className="font-bold text-white text-sm truncate">
+                    <span className="font-bold text-white text-xs sm:text-sm truncate">
                       {match.homeTeam.name}
                     </span>
                   </div>
 
-                  {/* Centre info */}
-                  <div className="text-center px-2 shrink-0">
+                  <div className="text-center px-1 sm:px-2 shrink-0">
                     {match.status !== "UPCOMING" ? (
                       <div
-                        className={`font-black text-xl ${
+                        className={`font-black text-lg sm:text-xl ${
                           match.status === "LIVE"
                             ? "text-red-400"
                             : "text-white"
@@ -117,18 +112,17 @@ export function AdminMatchManager({
                         {match.homeScore} – {match.awayScore}
                       </div>
                     ) : (
-                      <div className="text-gray-500 text-xs leading-tight">
+                      <div className="text-gray-500 text-xs leading-tight text-center">
                         {formatDateTime(match.scheduledAt)}
                       </div>
                     )}
                     <div className="text-gray-600 text-xs">
-                      M{match.matchNumber} · Leg {match.leg}
+                      M{match.matchNumber} · L{match.leg}
                     </div>
                   </div>
 
-                  {/* Away team */}
-                  <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
-                    <span className="font-bold text-white text-sm truncate">
+                  <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0 justify-end">
+                    <span className="font-bold text-white text-xs sm:text-sm truncate">
                       {match.awayTeam.name}
                     </span>
                     <TeamDot
@@ -138,8 +132,8 @@ export function AdminMatchManager({
                   </div>
                 </div>
 
-                {/* Action bar */}
-                <div className="flex items-center gap-2 px-4 pb-4 flex-wrap">
+                {/* Actions */}
+                <div className="flex items-center gap-2 px-3 sm:px-4 pb-3 sm:pb-4 flex-wrap">
                   {match.status === "UPCOMING" && (
                     <Button
                       size="sm"
@@ -159,12 +153,11 @@ export function AdminMatchManager({
                       >
                         {expanded === match.id ? (
                           <>
-                            <ChevronUp className="w-3.5 h-3.5" /> Hide Scorer
+                            <ChevronUp className="w-3.5 h-3.5" /> Hide
                           </>
                         ) : (
                           <>
-                            <ChevronDown className="w-3.5 h-3.5" /> Live Score
-                            Entry
+                            <ChevronDown className="w-3.5 h-3.5" /> Score Entry
                           </>
                         )}
                       </Button>
@@ -174,7 +167,7 @@ export function AdminMatchManager({
                         onClick={() => finishMatch(match)}
                         disabled={busy === match.id}
                       >
-                        {busy === match.id ? "Finishing…" : "🏁 Finish Match"}
+                        {busy === match.id ? "Finishing…" : "🏁 Finish"}
                       </Button>
                     </>
                   )}
@@ -183,14 +176,14 @@ export function AdminMatchManager({
                     <span className="text-gray-600 text-xs">
                       Ended{" "}
                       {match.endedAt ? formatDateTime(match.endedAt) : "—"}
-                      {match.mvpPlayerId && " · MVP awarded ⭐"}
+                      {match.mvpPlayerId && " · MVP ⭐"}
                     </span>
                   )}
                 </div>
 
-                {/* Live score panel (collapsible) */}
+                {/* Live score panel */}
                 {expanded === match.id && match.status === "LIVE" && (
-                  <div className="border-t border-gray-800 p-4">
+                  <div className="border-t border-gray-800 p-3 sm:p-4">
                     <LiveScorePanel match={match} onUpdate={updateMatch} />
                   </div>
                 )}

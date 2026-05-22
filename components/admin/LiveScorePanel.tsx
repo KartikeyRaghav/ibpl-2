@@ -6,7 +6,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import { TeamDot } from "@/components/ui/Badge";
 import toast from "react-hot-toast";
-import { number } from "zod";
 
 interface Props {
   match: Match;
@@ -23,35 +22,34 @@ export function LiveScorePanel({ match, onUpdate }: Props) {
   const [selectedAway, setSelectedAway] = useState("");
   const [minute, setMinute] = useState(0);
 
-  // Safe player lists — filter out nulls
-  const homePlayers = (match.playerStats ?? [])
-    .filter(
-      (s) => s.teamId === match.homeTeamId && !s.isDisqualified && s.player,
-    )
-    .map((s) => s.player!);
+  const disqualifiedIds = new Set(
+    (match.playerStats ?? [])
+      .filter((s) => s.isDisqualified)
+      .map((s) => s.playerId),
+  );
 
-  const awayPlayers = (match.playerStats ?? [])
-    .filter(
-      (s) => s.teamId === match.awayTeamId && !s.isDisqualified && s.player,
-    )
-    .map((s) => s.player!);
+  const homePlayers = ((match.homeTeam as any).players ?? []).filter(
+    (p: any) => !disqualifiedIds.has(p.id),
+  );
+  const awayPlayers = ((match.awayTeam as any).players ?? []).filter(
+    (p: any) => !disqualifiedIds.has(p.id),
+  );
 
   const homeFouls = (match.playerStats ?? [])
     .filter((s) => s.teamId === match.homeTeamId)
     .reduce((a, s) => a + s.fouls, 0);
-
   const awayFouls = (match.playerStats ?? [])
     .filter((s) => s.teamId === match.awayTeamId)
     .reduce((a, s) => a + s.fouls, 0);
 
+  // ── Handlers ──────────────────────────────────────────────────────────────
   const score = async (
     side: "home" | "away",
     pts: number,
     type: ScoringEvent,
   ) => {
     const playerId = side === "home" ? selectedHome : selectedAway;
-    const key = `${side}-${type}`;
-    setBusy(key);
+    setBusy(`${side}-${type}`);
     try {
       const updated: Match = await api.addScore(
         match.id,
@@ -70,7 +68,7 @@ export function LiveScorePanel({ match, onUpdate }: Props) {
         `+${pts} — ${side === "home" ? match.homeTeam.shortName : match.awayTeam.shortName}`,
       );
     } catch (e: any) {
-      toast.error(e.message ?? "Failed to update score");
+      toast.error(e.message ?? "Failed");
     } finally {
       setBusy(null);
     }
@@ -79,7 +77,7 @@ export function LiveScorePanel({ match, onUpdate }: Props) {
   const foul = async (side: "home" | "away", type: FoulEvent) => {
     const playerId = side === "home" ? selectedHome : selectedAway;
     if (!playerId) {
-      toast.error("Select a player for the foul");
+      toast.error("Select a player first");
       return;
     }
     setBusy(`${side}-foul`);
@@ -98,7 +96,7 @@ export function LiveScorePanel({ match, onUpdate }: Props) {
       onUpdate(updated);
       toast.success("Foul recorded");
     } catch (e: any) {
-      toast.error(e.message ?? "Failed to record foul");
+      toast.error(e.message ?? "Failed");
     } finally {
       setBusy(null);
     }
@@ -122,38 +120,38 @@ export function LiveScorePanel({ match, onUpdate }: Props) {
   return (
     <div className="space-y-4">
       {/* Live scoreboard */}
-      <div className="bg-linear-to-br from-gray-950 to-gray-900 border border-red-800/40 rounded-xl p-5">
+      <div className="bg-linear-to-br from-gray-950 to-gray-900 border border-red-800/40 rounded-xl p-4 sm:p-5">
         <div className="flex items-center gap-2 mb-4">
           <span className="flex items-center gap-1.5 text-red-400 text-xs font-bold animate-pulse">
             <span className="w-2 h-2 bg-red-400 rounded-full" />
             LIVE
           </span>
           <span className="text-gray-500 text-xs">
-            Quarter {match.currentQuarter} of 4
+            Q{match.currentQuarter} of 4
           </span>
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <div className="text-center flex-1">
             <TeamDot
               color={match.homeTeam.color}
               shortName={match.homeTeam.shortName}
             />
-            <div className="mt-1 text-white font-bold text-sm">
+            <div className="mt-1 text-white font-bold text-xs sm:text-sm truncate">
               {match.homeTeam.name}
             </div>
-            <div className="text-gray-500 text-xs">{homeFouls} team fouls</div>
+            <div className="text-gray-500 text-xs">{homeFouls}F</div>
           </div>
 
-          <div className="text-center px-4">
-            <div className="font-black text-4xl text-red-400">
-              {match.homeScore} — {match.awayScore}
+          <div className="text-center px-2">
+            <div className="font-black text-3xl sm:text-4xl text-red-400">
+              {match.homeScore}&nbsp;—&nbsp;{match.awayScore}
             </div>
             <div className="flex justify-center gap-1.5 mt-2">
               {[1, 2, 3, 4].map((q) => (
                 <div
                   key={q}
-                  className={`w-5 h-1.5 rounded-full ${
+                  className={`w-4 h-1.5 rounded-full ${
                     q < match.currentQuarter
                       ? "bg-orange-500"
                       : q === match.currentQuarter
@@ -170,16 +168,16 @@ export function LiveScorePanel({ match, onUpdate }: Props) {
               color={match.awayTeam.color}
               shortName={match.awayTeam.shortName}
             />
-            <div className="mt-1 text-white font-bold text-sm">
+            <div className="mt-1 text-white font-bold text-xs sm:text-sm truncate">
               {match.awayTeam.name}
             </div>
-            <div className="text-gray-500 text-xs">{awayFouls} team fouls</div>
+            <div className="text-gray-500 text-xs">{awayFouls}F</div>
           </div>
         </div>
       </div>
 
-      {/* Controls row */}
-      <div className="flex items-center gap-3 bg-gray-800/50 rounded-lg p-3">
+      {/* Minute + Quarter controls */}
+      <div className="flex items-center gap-3 bg-gray-800/50 rounded-lg p-3 flex-wrap">
         <label className="text-gray-400 text-xs font-semibold uppercase tracking-wide whitespace-nowrap">
           Q{match.currentQuarter} Minute:
         </label>
@@ -203,7 +201,7 @@ export function LiveScorePanel({ match, onUpdate }: Props) {
       </div>
 
       {/* Side-by-side score entry */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <ScoreSide
           label={match.homeTeam.name}
           color={match.homeTeam.color}
@@ -231,7 +229,7 @@ export function LiveScorePanel({ match, onUpdate }: Props) {
   );
 }
 
-// ─── Sub-component ────────────────────────────────────────────────────────────
+// ─── ScoreSide sub-component ──────────────────────────────────────────────────
 
 interface ScoreSideProps {
   label: string;
@@ -254,7 +252,6 @@ function ScoreSide({
   onScore,
   onFoul,
   busy,
-  prefix,
 }: ScoreSideProps) {
   const disabled = !!busy;
 
@@ -267,23 +264,32 @@ function ScoreSide({
           style={{ backgroundColor: color }}
         />
         <span className="font-bold text-white text-xs truncate">{label}</span>
+        <span className="ml-auto text-gray-600 text-xs">
+          {players.length} players
+        </span>
       </div>
 
-      {/* Player select */}
+      {/* Player dropdown */}
       <select
         value={selected}
         onChange={(e) => onSelect(e.target.value)}
-        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-white text-xs"
+        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-2 py-2 text-white text-xs focus:outline-none focus:border-orange-500"
       >
         <option value="">— Select player —</option>
-        {players.map((p) => (
+        {players.map((p: any) => (
           <option key={p.id} value={p.id}>
-            #{p.jerseyNumber} {p.name}
+            #{p.jerseyNumber} {p.name} ({p.position})
           </option>
         ))}
       </select>
 
-      {/* Score buttons */}
+      {players.length === 0 && (
+        <p className="text-red-400 text-xs">
+          No players found — check team roster.
+        </p>
+      )}
+
+      {/* Scoring buttons */}
       <div className="space-y-1">
         {(
           [
@@ -307,7 +313,7 @@ function ScoreSide({
           </button>
         ))}
 
-        {/* Foul buttons */}
+        {/* Foul buttons — require a player to be selected */}
         {(
           [
             { label: "Personal Foul", icon: "⚠", type: "FOUL" as FoulEvent },

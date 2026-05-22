@@ -1,6 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+const fullMatchInclude = {
+  homeTeam: {
+    include: {
+      players: { where: { isActive: true }, orderBy: { jerseyNumber: "asc" } },
+    },
+  },
+  awayTeam: {
+    include: {
+      players: { where: { isActive: true }, orderBy: { jerseyNumber: "asc" } },
+    },
+  },
+  quarters: { orderBy: { quarter: "asc" as const } },
+  playerStats: { include: { player: { include: { team: true } } } },
+  events: { orderBy: { createdAt: "asc" as const } },
+} as const;
+
 export async function GET(
   _: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -9,13 +25,7 @@ export async function GET(
     const { id } = await params;
     const match = await prisma.match.findUnique({
       where: { id: Number(id) },
-      include: {
-        homeTeam: true,
-        awayTeam: true,
-        quarters: { orderBy: { quarter: "asc" } },
-        playerStats: { include: { player: { include: { team: true } } } },
-        events: { orderBy: { createdAt: "asc" } },
-      },
+      include: fullMatchInclude,
     });
     if (!match)
       return NextResponse.json({ error: "Match not found" }, { status: 404 });
@@ -39,7 +49,7 @@ export async function PUT(
         scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : undefined,
         mvpPlayerId: Number(body.mvpPlayerId),
       },
-      include: { homeTeam: true, awayTeam: true },
+      include: fullMatchInclude,
     });
     return NextResponse.json({ data: match });
   } catch (e: any) {

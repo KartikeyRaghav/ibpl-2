@@ -20,6 +20,33 @@ const foulSchema = z.object({
   minute: z.number().min(0).max(10),
 });
 
+async function fetchFullMatch(id: string) {
+  return prisma.match.findUnique({
+    where: { id: Number(id) },
+    include: {
+      homeTeam: {
+        include: {
+          players: {
+            where: { isActive: true },
+            orderBy: { jerseyNumber: "asc" },
+          },
+        },
+      },
+      awayTeam: {
+        include: {
+          players: {
+            where: { isActive: true },
+            orderBy: { jerseyNumber: "asc" },
+          },
+        },
+      },
+      quarters: { orderBy: { quarter: "asc" } },
+      playerStats: { include: { player: true } },
+      events: { orderBy: { createdAt: "desc" }, take: 30 },
+    },
+  });
+}
+
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -47,70 +74,67 @@ export async function POST(
     );
 
     if (isFoul) {
-      // Handle foul
       const parsed = foulSchema.parse(body);
-      if (parsed.playerId) {
-        const stat = await prisma.playerMatchStat.upsert({
-          where: {
-            playerId_matchId: {
-              playerId: Number(parsed.playerId),
-              matchId: Number(id),
-            },
-          },
-          create: {
+      const teamId = Number(
+        parsed.teamSide === "home" ? match.homeTeamId : match.awayTeamId,
+      );
+
+      const stat = await prisma.playerMatchStat.upsert({
+        where: {
+          playerId_matchId: {
             playerId: Number(parsed.playerId),
             matchId: Number(id),
-            teamId: Number(
-              parsed.teamSide === "home" ? match.homeTeamId : match.awayTeamId,
-            ),
-            fouls: 1,
-            technicalFouls: parsed.eventType === "TECHNICAL_FOUL" ? 1 : 0,
           },
-          update: {
-            fouls: { increment: 1 },
-            technicalFouls:
-              parsed.eventType === "TECHNICAL_FOUL"
-                ? { increment: 1 }
-                : undefined,
-          },
+        },
+        create: {
+          playerId: Number(parsed.playerId),
+          matchId: Number(id),
+          teamId,
+          fouls: 1,
+          technicalFouls: parsed.eventType === "TECHNICAL_FOUL" ? 1 : 0,
+        },
+        update: {
+          fouls: { increment: 1 },
+          technicalFouls:
+            parsed.eventType === "TECHNICAL_FOUL"
+              ? { increment: 1 }
+              : undefined,
+        },
+      });
+
+      // Auto-disqualify at foulLimit (5)
+      if (stat.fouls >= 5) {
+        await prisma.playerMatchStat.update({
+          where: { id: Number(stat.id) },
+          data: { isDisqualified: true },
         });
-        // Auto-disqualify at 5 fouls
-        if (stat.fouls >= 5) {
-          await prisma.playerMatchStat.update({
-            where: { id: Number(stat.id) },
-            data: { isDisqualified: true },
-          });
-        }
       }
+
       await prisma.matchEvent.create({
         data: {
           matchId: Number(id),
           quarter: parsed.quarter,
           minute: parsed.minute,
           type: parsed.eventType as any,
-          teamId: Number(
-            parsed.teamSide === "home" ? match.homeTeamId : match.awayTeamId,
-          ),
-          playerId: Number(parsed.playerId || null),
+          teamId,
+          playerId: Number(parsed.playerId),
         },
       });
     } else {
-      // Handle scoring
+      // Scoring event
       const parsed = scoreSchema.parse(body);
       const isHome = parsed.teamSide === "home";
-      const newHomeScore = isHome
-        ? match.homeScore + parsed.points
-        : match.homeScore;
-      const newAwayScore = !isHome
-        ? match.awayScore + parsed.points
-        : match.awayScore;
+      const teamId = Number(isHome ? match.homeTeamId : match.awayTeamId);
 
       await prisma.match.update({
         where: { id: Number(id) },
-        data: { homeScore: newHomeScore, awayScore: newAwayScore },
+        data: {
+          homeScore: isHome ? { increment: parsed.points } : undefined,
+          awayScore: !isHome ? { increment: parsed.points } : undefined,
+        },
       });
 
-      // Update quarter score
+      // Upsert quarter score
       await prisma.quarterScore.upsert({
         where: {
           matchId_quarter: { matchId: Number(id), quarter: parsed.quarter },
@@ -126,7 +150,7 @@ export async function POST(
           : { awayScore: { increment: parsed.points } },
       });
 
-      // Update player stat
+      // Upsert player stat if player selected
       if (parsed.playerId) {
         await prisma.playerMatchStat.upsert({
           where: {
@@ -138,7 +162,7 @@ export async function POST(
           create: {
             playerId: Number(parsed.playerId),
             matchId: Number(id),
-            teamId: Number(isHome ? match.homeTeamId : match.awayTeamId),
+            teamId,
             points: parsed.points,
             twoPointers: parsed.eventType === "TWO_POINTER" ? 1 : 0,
             threePointers: parsed.eventType === "THREE_POINTER" ? 1 : 0,
@@ -164,31 +188,22 @@ export async function POST(
           quarter: parsed.quarter,
           minute: parsed.minute,
           type: parsed.eventType as any,
-          teamId: Number(isHome ? match.homeTeamId : match.awayTeamId),
-          playerId: Number(parsed.playerId || null),
+          teamId,
+          playerId: Number(parsed.playerId) ?? null,
           value: parsed.points,
         },
       });
     }
 
-    // Return updated match
-    const updated = await prisma.match.findUnique({
-      where: { id: Number(id) },
-      include: {
-        homeTeam: true,
-        awayTeam: true,
-        quarters: { orderBy: { quarter: "asc" } },
-        playerStats: { include: { player: true } },
-        events: { orderBy: { createdAt: "desc" }, take: 20 },
-      },
-    });
+    // Always return full match with team rosters
+    const updated = await fetchFullMatch(id);
     return NextResponse.json({ data: updated });
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 400 });
   }
 }
 
-// Advance quarter
+/** PATCH — advance to next quarter */
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -198,21 +213,20 @@ export async function PATCH(
   );
   if (!user || user.role !== "ADMIN")
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+
   try {
     const { id } = await params;
     const match = await prisma.match.findUnique({ where: { id: Number(id) } });
     if (!match || match.status !== "LIVE")
       return NextResponse.json({ error: "Match not live" }, { status: 400 });
-    const nextQ = match.currentQuarter + 1;
-    const updated = await prisma.match.update({
+
+    const next = Math.min(match.currentQuarter + 1, 4);
+    await prisma.match.update({
       where: { id: Number(id) },
-      data: { currentQuarter: Math.min(nextQ, 4) },
-      include: {
-        homeTeam: true,
-        awayTeam: true,
-        quarters: { orderBy: { quarter: "asc" } },
-      },
+      data: { currentQuarter: next },
     });
+
+    const updated = await fetchFullMatch(id);
     return NextResponse.json({ data: updated });
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 400 });
