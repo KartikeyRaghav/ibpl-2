@@ -8,10 +8,11 @@ export const revalidate = 30;
 export default async function PlayerProfilePage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: number }>;
 }) {
+  const { id } = await params;
   const player = await prisma.player.findUnique({
-    where: { id: params.id },
+    where: { id: Number(id) },
     include: {
       team: true,
       matchStats: {

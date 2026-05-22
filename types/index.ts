@@ -13,41 +13,41 @@ export type EventType =
   | "TIMEOUT";
 
 export interface User {
-  id: string;
+  id: number;
   email: string;
   name: string;
   role: Role;
 }
 
 export interface Team {
-  id: string;
+  id: number;
   name: string;
   shortName: string;
   color: string;
   logoUrl: string | null;
-  captainId: string | null;
+  captainId: number | null;
   coach: string | null;
   players?: Player[];
   standing?: TeamStanding;
 }
 
 export interface Player {
-  id: string;
+  id: number;
   name: string;
   jerseyNumber: number;
   position: Position;
   photoUrl: string | null;
   isActive: boolean;
-  teamId: string;
+  teamId: number;
   team?: Team;
   matchStats?: PlayerMatchStat[];
 }
 
 export interface Match {
-  id: string;
+  id: number;
   matchNumber: number;
-  homeTeamId: string;
-  awayTeamId: string;
+  homeTeamId: number;
+  awayTeamId: number;
   homeScore: number;
   awayScore: number;
   status: MatchStatus;
@@ -57,7 +57,7 @@ export interface Match {
   endedAt: string | null;
   currentQuarter: number;
   leg: number;
-  mvpPlayerId: string | null;
+  mvpPlayerId: number | null;
   homeTeam: Team;
   awayTeam: Team;
   quarters?: QuarterScore[];
@@ -66,18 +66,18 @@ export interface Match {
 }
 
 export interface QuarterScore {
-  id: string;
-  matchId: string;
+  id: number;
+  matchId: number;
   quarter: number;
   homeScore: number;
   awayScore: number;
 }
 
 export interface PlayerMatchStat {
-  id: string;
-  playerId: string;
-  matchId: string;
-  teamId: string;
+  id: number;
+  playerId: number;
+  matchId: number;
+  teamId: number;
   points: number;
   twoPointers: number;
   threePointers: number;
@@ -90,21 +90,21 @@ export interface PlayerMatchStat {
 }
 
 export interface MatchEvent {
-  id: string;
-  matchId: string;
+  id: number;
+  matchId: number;
   quarter: number;
   minute: number;
   type: EventType;
-  teamId: string | null;
-  playerId: string | null;
+  teamId: number | null;
+  playerId: number | null;
   value: number | null;
   note: string | null;
   createdAt: string;
 }
 
 export interface TeamStanding {
-  id: string;
-  teamId: string;
+  id: number;
+  teamId: number;
   matchesPlayed: number;
   wins: number;
   losses: number;
@@ -117,7 +117,7 @@ export interface TeamStanding {
 }
 
 export interface TournamentSettings {
-  id: string;
+  id: number;
   name: string;
   season: number;
   quartersPerGame: number;
@@ -134,15 +134,15 @@ export interface ApiResponse<T> {
 }
 
 export interface LiveScoreUpdate {
-  matchId: string;
+  matchId: number;
   homeScore: number;
   awayScore: number;
   currentQuarter: number;
   quarters: QuarterScore[];
   event?: {
     type: EventType;
-    teamId: string;
-    playerId?: string;
+    teamId: number;
+    playerId?: number;
     value?: number;
     quarter: number;
     minute: number;

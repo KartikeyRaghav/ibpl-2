@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Match } from "@/types";
 import { api } from "@/lib/api-client";
 
-export function useLiveMatch(matchId: string | null) {
+export function useLiveMatch(matchId: number | null) {
   const [match, setMatch] = useState<Match | null>(null);
   const [loading, setLoading] = useState(true);
 

@@ -11,7 +11,12 @@ export async function GET(req: NextRequest) {
       where: {
         ...(status ? { status: status as any } : {}),
         ...(teamId
-          ? { OR: [{ homeTeamId: teamId }, { awayTeamId: teamId }] }
+          ? {
+              OR: [
+                { homeTeamId: Number(teamId) },
+                { awayTeamId: Number(teamId) },
+              ],
+            }
           : {}),
       },
       include: {
@@ -34,8 +39,8 @@ export async function POST(req: NextRequest) {
     const match = await prisma.match.create({
       data: {
         matchNumber: body.matchNumber,
-        homeTeamId: body.homeTeamId,
-        awayTeamId: body.awayTeamId,
+        homeTeamId: Number(body.homeTeamId),
+        awayTeamId: Number(body.awayTeamId),
         venue: body.venue || "IIT Indore Sports Complex",
         scheduledAt: new Date(body.scheduledAt),
         leg: body.leg || 1,

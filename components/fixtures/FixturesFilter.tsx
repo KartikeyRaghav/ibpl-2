@@ -17,7 +17,7 @@ export function FixturesFilter({
 }: {
   teams: Team[];
   currentStatus?: string;
-  currentTeamId?: string;
+  currentTeamId?: number;
 }) {
   const router = useRouter();
 
@@ -63,7 +63,7 @@ export function FixturesFilter({
         {teams.map((t) => (
           <button
             key={t.id}
-            onClick={() => updateParam("teamId", t.id)}
+            onClick={() => updateParam("teamId", String(t.id))}
             className={cn(
               "px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors flex items-center gap-1.5",
               currentTeamId === t.id

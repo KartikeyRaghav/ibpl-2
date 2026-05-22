@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import { TeamDot } from "@/components/ui/Badge";
 import toast from "react-hot-toast";
+import { number } from "zod";
 
 interface Props {
   match: Match;

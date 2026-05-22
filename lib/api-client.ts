@@ -22,72 +22,72 @@ async function apiFetch<T>(
 export const api = {
   // Teams
   getTeams: () => apiFetch<any[]>("/teams"),
-  getTeam: (id: string) => apiFetch<any>(`/teams/${id}`),
+  getTeam: (id: number) => apiFetch<any>(`/teams/${id}`),
   createTeam: (data: any, token: string) =>
     apiFetch<any>(
       "/teams",
       { method: "POST", body: JSON.stringify(data) },
       token,
     ),
-  updateTeam: (id: string, data: any, token: string) =>
+  updateTeam: (id: number, data: any, token: string) =>
     apiFetch<any>(
       `/teams/${id}`,
       { method: "PUT", body: JSON.stringify(data) },
       token,
     ),
-  deleteTeam: (id: string, token: string) =>
+  deleteTeam: (id: number, token: string) =>
     apiFetch<any>(`/teams/${id}`, { method: "DELETE" }, token),
 
   // Players
-  getPlayers: (params?: { teamId?: string; search?: string }) => {
+  getPlayers: (params?: { teamId?: number; search?: string }) => {
     const qs = new URLSearchParams(params as any).toString();
     return apiFetch<any[]>(`/players${qs ? `?${qs}` : ""}`);
   },
-  getPlayer: (id: string) => apiFetch<any>(`/players/${id}`),
+  getPlayer: (id: number) => apiFetch<any>(`/players/${id}`),
   createPlayer: (data: any, token: string) =>
     apiFetch<any>(
       "/players",
       { method: "POST", body: JSON.stringify(data) },
       token,
     ),
-  updatePlayer: (id: string, data: any, token: string) =>
+  updatePlayer: (id: number, data: any, token: string) =>
     apiFetch<any>(
       `/players/${id}`,
       { method: "PUT", body: JSON.stringify(data) },
       token,
     ),
-  deletePlayer: (id: string, token: string) =>
+  deletePlayer: (id: number, token: string) =>
     apiFetch<any>(`/players/${id}`, { method: "DELETE" }, token),
 
   // Matches
-  getMatches: (params?: { status?: string; teamId?: string }) => {
+  getMatches: (params?: { status?: string; teamId?: number }) => {
     const qs = new URLSearchParams(params as any).toString();
     return apiFetch<any[]>(`/matches${qs ? `?${qs}` : ""}`);
   },
-  getMatch: (id: string) => apiFetch<any>(`/matches/${id}`),
+  getMatch: (id: number) => apiFetch<any>(`/matches/${id}`),
   createMatch: (data: any, token: string) =>
     apiFetch<any>(
       "/matches",
       { method: "POST", body: JSON.stringify(data) },
       token,
     ),
-  updateMatch: (id: string, data: any, token: string) =>
+  updateMatch: (id: number, data: any, token: string) =>
     apiFetch<any>(
       `/matches/${id}`,
       { method: "PUT", body: JSON.stringify(data) },
       token,
     ),
-  startMatch: (id: string, token: string) =>
+  startMatch: (id: number, token: string) =>
     apiFetch<any>(`/matches/${id}/start`, { method: "POST" }, token),
-  addScore: (id: string, data: any, token: string) =>
+  addScore: (id: number, data: any, token: string) =>
     apiFetch<any>(
       `/matches/${id}/score`,
       { method: "POST", body: JSON.stringify(data) },
       token,
     ),
-  nextQuarter: (id: string, token: string) =>
+  nextQuarter: (id: number, token: string) =>
     apiFetch<any>(`/matches/${id}/score`, { method: "PATCH" }, token),
-  finishMatch: (id: string, data: any, token: string) =>
+  finishMatch: (id: number, data: any, token: string) =>
     apiFetch<any>(
       `/matches/${id}/finish`,
       { method: "POST", body: JSON.stringify(data) },

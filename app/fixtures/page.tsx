@@ -7,7 +7,7 @@ export const revalidate = 15;
 export default async function FixturesPage({
   searchParams,
 }: {
-  searchParams: { status?: string; teamId?: string };
+  searchParams: { status?: string; teamId?: number };
 }) {
   const status = searchParams.status as any;
   const teamId = searchParams.teamId;
@@ -16,7 +16,12 @@ export default async function FixturesPage({
     where: {
       ...(status ? { status } : {}),
       ...(teamId
-        ? { OR: [{ homeTeamId: teamId }, { awayTeamId: teamId }] }
+        ? {
+            OR: [
+              { homeTeamId: Number(teamId) },
+              { awayTeamId: Number(teamId) },
+            ],
+          }
         : {}),
     },
     include: {

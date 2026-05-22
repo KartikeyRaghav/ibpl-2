@@ -18,7 +18,7 @@ export function useTeams() {
   });
 }
 
-export function useTeam(id: string) {
+export function useTeam(id: number) {
   return useQuery<Team>({
     queryKey: ["teams", id],
     queryFn: () => fetcher(`/api/teams/${id}`),
@@ -27,9 +27,9 @@ export function useTeam(id: string) {
 }
 
 // ─── Players ──────────────────────────────────────────────────────────────────
-export function usePlayers(params?: { teamId?: string; search?: string }) {
+export function usePlayers(params?: { teamId?: number; search?: string }) {
   const qs = new URLSearchParams();
-  if (params?.teamId) qs.set("teamId", params.teamId);
+  if (params?.teamId) qs.set("teamId", String(params.teamId));
   if (params?.search) qs.set("search", params.search);
   return useQuery<Player[]>({
     queryKey: ["players", params],
@@ -38,7 +38,7 @@ export function usePlayers(params?: { teamId?: string; search?: string }) {
   });
 }
 
-export function usePlayer(id: string) {
+export function usePlayer(id: number) {
   return useQuery<Player>({
     queryKey: ["players", id],
     queryFn: () => fetcher(`/api/players/${id}`),
@@ -47,10 +47,10 @@ export function usePlayer(id: string) {
 }
 
 // ─── Matches ──────────────────────────────────────────────────────────────────
-export function useMatches(params?: { status?: string; teamId?: string }) {
+export function useMatches(params?: { status?: string; teamId?: number }) {
   const qs = new URLSearchParams();
   if (params?.status) qs.set("status", params.status);
-  if (params?.teamId) qs.set("teamId", params.teamId);
+  if (params?.teamId) qs.set("teamId", String(params.teamId));
   return useQuery<Match[]>({
     queryKey: ["matches", params],
     queryFn: () => fetcher(`/api/matches?${qs}`),
@@ -58,7 +58,7 @@ export function useMatches(params?: { status?: string; teamId?: string }) {
   });
 }
 
-export function useMatch(id: string) {
+export function useMatch(id: number) {
   return useQuery<Match>({
     queryKey: ["matches", id],
     queryFn: () => fetcher(`/api/matches/${id}`),
@@ -67,7 +67,7 @@ export function useMatch(id: string) {
 }
 
 // ─── Live match (polls every 3 seconds) ──────────────────────────────────────
-export function useLiveMatch(matchId: string | null) {
+export function useLiveMatch(matchId: number | null) {
   return useQuery<Match>({
     queryKey: ["live", matchId],
     queryFn: () => fetcher(`/api/live/${matchId}`),
@@ -107,7 +107,7 @@ export function useCreateTeam() {
 export function useUpdateTeam() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...data }: Partial<Team> & { id: string }) => {
+    mutationFn: async ({ id, ...data }: Partial<Team> & { id: number }) => {
       const res = await fetch(`/api/teams/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -123,7 +123,7 @@ export function useUpdateTeam() {
 export function useDeleteTeam() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (id: number) => {
       const res = await fetch(`/api/teams/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error((await res.json()).error);
     },
@@ -134,7 +134,7 @@ export function useDeleteTeam() {
 export function useCreatePlayer() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (data: Partial<Player> & { teamId: string }) => {
+    mutationFn: async (data: Partial<Player> & { teamId: number }) => {
       const res = await fetch("/api/players", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -150,7 +150,7 @@ export function useCreatePlayer() {
 export function useUpdatePlayer() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...data }: Partial<Player> & { id: string }) => {
+    mutationFn: async ({ id, ...data }: Partial<Player> & { id: number }) => {
       const res = await fetch(`/api/players/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -166,7 +166,7 @@ export function useUpdatePlayer() {
 export function useDeletePlayer() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (id: number) => {
       const res = await fetch(`/api/players/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error((await res.json()).error);
     },
@@ -212,7 +212,7 @@ export function useUpdateMatch() {
 export function useDeleteMatch() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (id: number) => {
       const res = await fetch(`/api/matches/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error((await res.json()).error);
     },

@@ -7,14 +7,14 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { formatDateTime, getInitials } from "@/lib/utils";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 
-export function MatchDetail({ matchId }: { matchId: string }) {
+export function MatchDetail({ matchId }: { matchId: number }) {
   const [match, setMatch] = useState<Match | null>(null);
   const [loading, setLoading] = useState(true);
   const statusRef = useRef<string | null>(null);
 
   const fetchMatch = useCallback(async () => {
     try {
-      const data: Match = await api.getMatch(matchId);
+      const data: Match = await api.getMatch(Number(matchId));
       setMatch(data);
       statusRef.current = data.status;
     } catch {

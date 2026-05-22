@@ -17,17 +17,17 @@ export function AdminMatchManager({
 }) {
   const { token } = useAuth();
   const [matches, setMatches] = useState<Match[]>(initialMatches);
-  const [expanded, setExpanded] = useState<string | null>(null);
-  const [busy, setBusy] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<number | null>(null);
+  const [busy, setBusy] = useState<number | null>(null);
 
   const updateMatch = useCallback((updated: Match) => {
     setMatches((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));
   }, []);
 
-  const toggle = (id: string) =>
+  const toggle = (id: number) =>
     setExpanded((prev) => (prev === id ? null : id));
 
-  const startMatch = async (matchId: string) => {
+  const startMatch = async (matchId: number) => {
     setBusy(matchId);
     try {
       const updated: Match = await api.startMatch(matchId, token!);
@@ -56,7 +56,7 @@ export function AdminMatchManager({
     try {
       const updated: Match = await api.finishMatch(
         match.id,
-        { mvpPlayerId: topScorer?.playerId ?? null },
+        { mvpPlayerId: Number(topScorer?.playerId) ?? null },
         token!,
       );
       updateMatch(updated);

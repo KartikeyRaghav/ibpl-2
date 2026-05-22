@@ -18,11 +18,11 @@ export function AdminPlayerRoster({
 }: {
   players: any[];
   teams: Team[];
-  onRemove: (id: string) => void;
+  onRemove: (id: number) => void;
   onSuccess: () => void;
 }) {
   const { token } = useAuth();
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<any>({});
   const [saving, setSaving] = useState(false);
 
@@ -41,7 +41,7 @@ export function AdminPlayerRoster({
     setEditForm({});
   };
 
-  const saveEdit = async (id: string) => {
+  const saveEdit = async (id: number) => {
     setSaving(true);
     try {
       await api.updatePlayer(id, editForm, token!);

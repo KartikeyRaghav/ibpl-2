@@ -5,12 +5,12 @@ import { z } from "zod";
 // ─── GET: Fetch live match state (used for polling) ───────────────────────────
 export async function GET(
   _req: NextRequest,
-  { params }: { params: Promise<{ matchId: string }> },
+  { params }: { params: Promise<{ matchId: number }> },
 ) {
   try {
     const { matchId } = await params;
     const match = await prisma.match.findUnique({
-      where: { id: matchId },
+      where: { id: Number(matchId) },
       include: {
         homeTeam: {
           select: { id: true, name: true, shortName: true, color: true },
@@ -49,8 +49,8 @@ export async function GET(
 // ─── POST: Add a scoring event ────────────────────────────────────────────────
 const scoreEventSchema = z.object({
   action: z.enum(["score", "foul", "quarter_end", "undo_last"]),
-  teamId: z.string().optional(),
-  playerId: z.string().optional(),
+  teamId: z.int().optional(),
+  playerId: z.int().optional(),
   type: z
     .enum([
       "TWO_POINTER",
@@ -68,7 +68,7 @@ const scoreEventSchema = z.object({
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ matchId: string }> },
+  { params }: { params: Promise<{ matchId: number }> },
 ) {
   try {
     const body = await req.json();
@@ -76,7 +76,7 @@ export async function POST(
     const { matchId } = await params;
 
     const match = await prisma.match.findUnique({
-      where: { id: matchId },
+      where: { id: Number(matchId) },
       include: { quarters: true },
     });
 
@@ -102,7 +102,7 @@ export async function POST(
 
       // Update match total score
       await prisma.match.update({
-        where: { id: matchId },
+        where: { id: Number(matchId) },
         data: isHome
           ? { homeScore: { increment: pts } }
           : { awayScore: { increment: pts } },
@@ -114,7 +114,7 @@ export async function POST(
       );
       if (existingQ) {
         await prisma.quarterScore.update({
-          where: { id: existingQ.id },
+          where: { id: Number(existingQ.id) },
           data: isHome
             ? { homeScore: { increment: pts } }
             : { awayScore: { increment: pts } },
@@ -122,7 +122,7 @@ export async function POST(
       } else {
         await prisma.quarterScore.create({
           data: {
-            matchId: matchId,
+            matchId: Number(matchId),
             quarter: payload.quarter,
             homeScore: isHome ? pts : 0,
             awayScore: isHome ? 0 : pts,
@@ -134,14 +134,14 @@ export async function POST(
       await prisma.playerMatchStat.upsert({
         where: {
           playerId_matchId: {
-            playerId: payload.playerId,
-            matchId: matchId,
+            playerId: Number(payload.playerId),
+            matchId: Number(matchId),
           },
         },
         create: {
-          playerId: payload.playerId,
-          matchId: matchId,
-          teamId: payload.teamId,
+          playerId: Number(payload.playerId),
+          matchId: Number(matchId),
+          teamId: Number(payload.teamId),
           points: pts,
           twoPointers: payload.type === "TWO_POINTER" ? 1 : 0,
           threePointers: payload.type === "THREE_POINTER" ? 1 : 0,
@@ -161,12 +161,12 @@ export async function POST(
       // Log event
       await prisma.matchEvent.create({
         data: {
-          matchId: matchId,
+          matchId: Number(matchId),
           quarter: payload.quarter,
           minute: payload.minute,
           type: payload.type as any,
-          teamId: payload.teamId,
-          playerId: payload.playerId,
+          teamId: Number(payload.teamId),
+          playerId: Number(payload.playerId),
           value: pts,
         },
       });
@@ -182,14 +182,14 @@ export async function POST(
       const stat = await prisma.playerMatchStat.upsert({
         where: {
           playerId_matchId: {
-            playerId: payload.playerId,
-            matchId: matchId,
+            playerId: Number(payload.playerId),
+            matchId: Number(matchId),
           },
         },
         create: {
-          playerId: payload.playerId,
-          matchId: matchId,
-          teamId: payload.teamId,
+          playerId: Number(payload.playerId),
+          matchId: Number(matchId),
+          teamId: Number(payload.teamId),
           fouls: payload.type === "FOUL" ? 1 : 0,
           technicalFouls: payload.type === "TECHNICAL_FOUL" ? 1 : 0,
         },
@@ -205,19 +205,19 @@ export async function POST(
       const foulLimit = settings?.foulLimit ?? 5;
       if (stat.fouls >= foulLimit) {
         await prisma.playerMatchStat.update({
-          where: { id: stat.id },
+          where: { id: Number(stat.id) },
           data: { isDisqualified: true },
         });
       }
 
       await prisma.matchEvent.create({
         data: {
-          matchId: matchId,
+          matchId: Number(matchId),
           quarter: payload.quarter,
           minute: payload.minute,
           type: payload.type as any,
-          teamId: payload.teamId,
-          playerId: payload.playerId,
+          teamId: Number(payload.teamId),
+          playerId: Number(payload.playerId),
         },
       });
     }
@@ -227,19 +227,19 @@ export async function POST(
       if (nextQuarter > 4) {
         // End of game
         await prisma.match.update({
-          where: { id: matchId },
+          where: { id: Number(matchId) },
           data: { status: "FINISHED", endedAt: new Date(), currentQuarter: 4 },
         });
         const { recalculateStandings } = await import("@/lib/standings");
         await recalculateStandings();
       } else {
         await prisma.match.update({
-          where: { id: matchId },
+          where: { id: Number(matchId) },
           data: { currentQuarter: nextQuarter },
         });
         await prisma.matchEvent.create({
           data: {
-            matchId: matchId,
+            matchId: Number(matchId),
             quarter: payload.quarter,
             minute: 0,
             type: "QUARTER_END",
@@ -250,7 +250,7 @@ export async function POST(
 
     // Return fresh match state
     const updated = await prisma.match.findUnique({
-      where: { id: matchId },
+      where: { id: Number(matchId) },
       include: {
         homeTeam: {
           select: { id: true, name: true, shortName: true, color: true },

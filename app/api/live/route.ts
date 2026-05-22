@@ -5,7 +5,7 @@ import { recalculateStandings } from "@/lib/standings";
 import { z } from "zod";
 
 const liveUpdateSchema = z.object({
-  matchId: z.string(),
+  matchId: z.int(),
   teamSide: z.enum(["home", "away"]),
   eventType: z.enum([
     "TWO_POINTER",
@@ -16,7 +16,7 @@ const liveUpdateSchema = z.object({
     "TIMEOUT",
     "QUARTER_END",
   ]),
-  playerId: z.string().optional(),
+  playerId: z.int().optional(),
   quarter: z.number().int().min(1).max(4),
   minute: z.number().min(0).max(10),
 });
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     const data = liveUpdateSchema.parse(body);
 
     const match = await prisma.match.findUnique({
-      where: { id: data.matchId },
+      where: { id: Number(data.matchId) },
     });
     if (!match)
       return NextResponse.json({ error: "Match not found" }, { status: 404 });
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
 
     // Update match score
     const updatedMatch = await prisma.match.update({
-      where: { id: data.matchId },
+      where: { id: Number(data.matchId) },
       data: {
         homeScore: isHome ? match.homeScore + pts : match.homeScore,
         awayScore: !isHome ? match.awayScore + pts : match.awayScore,
@@ -65,12 +65,15 @@ export async function POST(req: NextRequest) {
     if (pts > 0) {
       const existing = await prisma.quarterScore.findUnique({
         where: {
-          matchId_quarter: { matchId: data.matchId, quarter: data.quarter },
+          matchId_quarter: {
+            matchId: Number(data.matchId),
+            quarter: data.quarter,
+          },
         },
       });
       if (existing) {
         await prisma.quarterScore.update({
-          where: { id: existing.id },
+          where: { id: Number(existing.id) },
           data: {
             homeScore: isHome ? existing.homeScore + pts : existing.homeScore,
             awayScore: !isHome ? existing.awayScore + pts : existing.awayScore,
@@ -79,7 +82,7 @@ export async function POST(req: NextRequest) {
       } else {
         await prisma.quarterScore.create({
           data: {
-            matchId: data.matchId,
+            matchId: Number(data.matchId),
             quarter: data.quarter,
             homeScore: isHome ? pts : 0,
             awayScore: !isHome ? pts : 0,
@@ -111,11 +114,14 @@ export async function POST(req: NextRequest) {
 
       await prisma.playerMatchStat.upsert({
         where: {
-          playerId_matchId: { playerId: data.playerId, matchId: data.matchId },
+          playerId_matchId: {
+            playerId: Number(data.playerId),
+            matchId: Number(data.matchId),
+          },
         },
         create: {
-          playerId: data.playerId,
-          matchId: data.matchId,
+          playerId: Number(data.playerId),
+          matchId: Number(data.matchId),
           teamId,
           points: pts,
           twoPointers: data.eventType === "TWO_POINTER" ? 1 : 0,
@@ -132,14 +138,14 @@ export async function POST(req: NextRequest) {
         const pStat = await prisma.playerMatchStat.findUnique({
           where: {
             playerId_matchId: {
-              playerId: data.playerId,
-              matchId: data.matchId,
+              playerId: Number(data.playerId),
+              matchId: Number(data.matchId),
             },
           },
         });
         if (pStat && pStat.fouls + pStat.technicalFouls >= 5) {
           await prisma.playerMatchStat.update({
-            where: { id: pStat.id },
+            where: { id: Number(pStat.id) },
             data: { isDisqualified: true },
           });
         }
@@ -149,12 +155,12 @@ export async function POST(req: NextRequest) {
     // Log match event
     await prisma.matchEvent.create({
       data: {
-        matchId: data.matchId,
+        matchId: Number(data.matchId),
         quarter: data.quarter,
         minute: data.minute,
         type: data.eventType as any,
         teamId,
-        playerId: data.playerId,
+        playerId: Number(data.playerId),
         value: pts > 0 ? pts : null,
       },
     });
@@ -162,7 +168,7 @@ export async function POST(req: NextRequest) {
     // Handle quarter end / finish
     if (data.eventType === "QUARTER_END" && match.currentQuarter === 4) {
       await prisma.match.update({
-        where: { id: data.matchId },
+        where: { id: Number(data.matchId) },
         data: { status: "FINISHED", endedAt: new Date() },
       });
       await recalculateStandings();
@@ -173,7 +179,7 @@ export async function POST(req: NextRequest) {
       CHANNELS.match(data.matchId),
       EVENTS.scoreUpdate,
       {
-        matchId: data.matchId,
+        matchId: Number(data.matchId),
         homeScore: updatedMatch.homeScore,
         awayScore: updatedMatch.awayScore,
         currentQuarter: updatedMatch.currentQuarter,
@@ -185,7 +191,7 @@ export async function POST(req: NextRequest) {
 
     // Also push to global channel for live ticker
     await pusherServer.trigger(CHANNELS.global, EVENTS.scoreUpdate, {
-      matchId: data.matchId,
+      matchId: Number(data.matchId),
       homeScore: updatedMatch.homeScore,
       awayScore: updatedMatch.awayScore,
     });

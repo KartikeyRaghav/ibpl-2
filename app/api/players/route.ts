@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     const players = await prisma.player.findMany({
       where: {
         isActive: true,
-        ...(teamId ? { teamId } : {}),
+        ...(teamId ? { teamId: Number(teamId) } : {}),
         ...(search ? { name: { contains: search, mode: "insensitive" } } : {}),
       },
       include: {
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
         name: body.name,
         jerseyNumber: Number(body.jerseyNumber),
         position: body.position,
-        teamId: body.teamId,
+        teamId: Number(body.teamId),
         photoUrl: body.photoUrl || null,
       },
       include: { team: true },

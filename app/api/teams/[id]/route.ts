@@ -3,12 +3,12 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   _: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: number }> },
 ) {
   try {
     const { id } = await params;
     const team = await prisma.team.findUnique({
-      where: { id: id },
+      where: { id: Number(id) },
       include: {
         players: {
           where: { isActive: true },
@@ -36,19 +36,19 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: number }> },
 ) {
   try {
     const body = await req.json();
     const { id } = await params;
     const team = await prisma.team.update({
-      where: { id },
+      where: { id: Number(id) },
       data: {
         name: body.name,
         shortName: body.shortName,
         color: body.color,
         coach: body.coach,
-        captainId: body.captainId,
+        captainId: Number(body.captainId),
         logoUrl: body.logoUrl,
       },
     });
@@ -60,11 +60,11 @@ export async function PUT(
 
 export async function DELETE(
   _: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: number }> },
 ) {
   try {
     const { id } = await params;
-    await prisma.team.delete({ where: { id: id } });
+    await prisma.team.delete({ where: { id: Number(id) } });
     return NextResponse.json({ data: { success: true } });
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 400 });

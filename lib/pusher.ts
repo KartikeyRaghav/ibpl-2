@@ -27,7 +27,7 @@ export function getPusherClient(): PusherClient {
 
 // Channel names
 export const CHANNELS = {
-  match: (matchId: string) => `match-${matchId}`,
+  match: (matchId: number) => `match-${matchId}`,
   global: "ibpl-global",
 };
 

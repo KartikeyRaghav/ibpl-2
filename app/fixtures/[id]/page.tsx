@@ -1,11 +1,12 @@
 import { MatchDetail } from "@/components/fixtures/MatchDetail";
 import Link from "next/link";
 
-export default function MatchDetailPage({
+export default async function MatchDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: number }>;
 }) {
+  const { id } = await params;
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="mb-4">
@@ -16,7 +17,7 @@ export default function MatchDetailPage({
           ← Back to Fixtures
         </Link>
       </div>
-      <MatchDetail matchId={params.id} />
+      <MatchDetail matchId={Number(id)} />
     </div>
   );
 }

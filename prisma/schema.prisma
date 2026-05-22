@@ -12,7 +12,7 @@ datasource db {
 // ─── Auth ────────────────────────────────────────────────────────────────────
 
 model User {
-  id        String   @id @default(cuid())
+  id        Int      @id @default(autoincrement())
   email     String   @unique
   password  String
   name      String
@@ -29,7 +29,7 @@ enum Role {
 // ─── Tournament ───────────────────────────────────────────────────────────────
 
 model TournamentSettings {
-  id              String  @id @default(cuid())
+  id              Int     @id @default(autoincrement())
   name            String  @default("IBPL Season 1")
   season          Int     @default(1)
   quartersPerGame Int     @default(4)
@@ -43,12 +43,12 @@ model TournamentSettings {
 // ─── Teams ────────────────────────────────────────────────────────────────────
 
 model Team {
-  id        String   @id @default(cuid())
+  id        Int      @id @default(autoincrement())
   name      String   @unique
   shortName String   @unique // "TB", "HH"
   color     String   @default("#F47B20")
   logoUrl   String?
-  captainId String?
+  captainId Int?
   coach     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -64,13 +64,13 @@ model Team {
 // ─── Players ──────────────────────────────────────────────────────────────────
 
 model Player {
-  id           String   @id @default(cuid())
+  id           Int      @id @default(autoincrement())
   name         String
   jerseyNumber Int
   position     Position
   photoUrl     String?
   isActive     Boolean  @default(true)
-  teamId       String
+  teamId       Int
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -92,10 +92,10 @@ enum Position {
 // ─── Matches ──────────────────────────────────────────────────────────────────
 
 model Match {
-  id             String      @id @default(cuid())
+  id             Int         @id @default(autoincrement())
   matchNumber    Int         @unique
-  homeTeamId     String
-  awayTeamId     String
+  homeTeamId     Int
+  awayTeamId     Int
   homeScore      Int         @default(0)
   awayScore      Int         @default(0)
   status         MatchStatus @default(UPCOMING)
@@ -105,7 +105,7 @@ model Match {
   endedAt        DateTime?
   currentQuarter Int         @default(1)
   leg            Int         @default(1) // 1 = first leg, 2 = return leg
-  mvpPlayerId    String?
+  mvpPlayerId    Int?
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
 
@@ -128,11 +128,11 @@ enum MatchStatus {
 }
 
 model QuarterScore {
-  id        String @id @default(cuid())
-  matchId   String
+  id        Int @id @default(autoincrement())
+  matchId   Int
   quarter   Int // 1-4
-  homeScore Int    @default(0)
-  awayScore Int    @default(0)
+  homeScore Int @default(0)
+  awayScore Int @default(0)
 
   match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
 
@@ -143,10 +143,10 @@ model QuarterScore {
 // ─── Player Stats Per Match ───────────────────────────────────────────────────
 
 model PlayerMatchStat {
-  id       String @id @default(cuid())
-  playerId String
-  matchId  String
-  teamId   String
+  id       Int @id @default(autoincrement())
+  playerId Int
+  matchId  Int
+  teamId   Int
 
   points         Int     @default(0)
   twoPointers    Int     @default(0) // made
@@ -167,13 +167,13 @@ model PlayerMatchStat {
 // ─── Match Events (timeline) ──────────────────────────────────────────────────
 
 model MatchEvent {
-  id        String    @id @default(cuid())
-  matchId   String
+  id        Int       @id @default(autoincrement())
+  matchId   Int
   quarter   Int
   minute    Float // time in quarter when event happened
   type      EventType
-  teamId    String?
-  playerId  String?
+  teamId    Int?
+  playerId  Int?
   value     Int? // points for scoring events
   note      String?
   createdAt DateTime  @default(now())
@@ -198,8 +198,8 @@ enum EventType {
 // ─── Standings ────────────────────────────────────────────────────────────────
 
 model TeamStanding {
-  id            String   @id @default(cuid())
-  teamId        String   @unique
+  id            Int      @id @default(autoincrement())
+  teamId        Int      @unique
   matchesPlayed Int      @default(0)
   wins          Int      @default(0)
   losses        Int      @default(0)

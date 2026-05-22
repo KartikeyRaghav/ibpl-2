@@ -3,12 +3,12 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   _: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: number }> },
 ) {
   try {
     const { id } = await params;
     const player = await prisma.player.findUnique({
-      where: { id: id },
+      where: { id: Number(id) },
       include: {
         team: true,
         matchStats: {
@@ -42,18 +42,18 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: number }> },
 ) {
   try {
     const { id } = await params;
     const body = await req.json();
     const player = await prisma.player.update({
-      where: { id: id },
+      where: { id: Number(id) },
       data: {
         name: body.name,
         jerseyNumber: Number(body.jerseyNumber),
         position: body.position,
-        teamId: body.teamId,
+        teamId: Number(body.teamId),
         photoUrl: body.photoUrl,
         isActive: body.isActive,
       },
@@ -66,12 +66,12 @@ export async function PUT(
 
 export async function DELETE(
   _: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: number }> },
 ) {
   try {
     const { id } = await params;
     await prisma.player.update({
-      where: { id: id },
+      where: { id: Number(id) },
       data: { isActive: false },
     });
     return NextResponse.json({ data: { success: true } });

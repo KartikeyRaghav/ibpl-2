@@ -7,7 +7,7 @@ const JWT_SECRET =
 const JWT_EXPIRES = "7d";
 
 export function signToken(user: {
-  id: string;
+  id: number;
   email: string;
   name: string;
   role: string;

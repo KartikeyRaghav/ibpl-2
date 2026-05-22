@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       },
     });
     // Initialize standing
-    await prisma.teamStanding.create({ data: { teamId: team.id } });
+    await prisma.teamStanding.create({ data: { teamId: Number(team.id) } });
     return NextResponse.json({ data: team }, { status: 201 });
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 400 });
