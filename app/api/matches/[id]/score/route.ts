@@ -22,7 +22,7 @@ const foulSchema = z.object({
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ id: number }> },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const user = verifyToken(
     getTokenFromHeader(req.headers.get("authorization")) || "",
@@ -191,7 +191,7 @@ export async function POST(
 // Advance quarter
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: Promise<{ id: number }> },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const user = verifyToken(
     getTokenFromHeader(req.headers.get("authorization")) || "",

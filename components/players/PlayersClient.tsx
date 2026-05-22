@@ -69,15 +69,17 @@ export function PlayersClient({
         {teams.map((t) => (
           <button
             key={t.id}
-            onClick={() => setTeamFilter(teamFilter === t.id ? "" : t.id)}
+            onClick={() =>
+              setTeamFilter(teamFilter === String(t.id) ? "" : String(t.id))
+            }
             className={cn(
               "px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors",
-              teamFilter === t.id
+              teamFilter === String(t.id)
                 ? "text-white border-transparent"
                 : "bg-gray-900 text-gray-400 border-gray-700 hover:border-gray-500",
             )}
             style={
-              teamFilter === t.id
+              teamFilter === String(t.id)
                 ? { backgroundColor: t.color, borderColor: t.color }
                 : {}
             }

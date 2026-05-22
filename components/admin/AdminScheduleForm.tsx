@@ -134,7 +134,7 @@ export function AdminScheduleForm({
           >
             <option value="">— Select Away Team —</option>
             {teams
-              .filter((t) => t.id !== form.homeTeamId)
+              .filter((t) => String(t.id) !== form.homeTeamId)
               .map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name}
@@ -177,21 +177,21 @@ export function AdminScheduleForm({
           <div
             className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-black text-xs"
             style={{
-              backgroundColor: teams.find((t) => t.id === form.homeTeamId)
+              backgroundColor: teams.find((t) => String(t.id) === form.homeTeamId)
                 ?.color,
             }}
           >
-            {teams.find((t) => t.id === form.homeTeamId)?.shortName}
+            {teams.find((t) => String(t.id) === form.homeTeamId)?.shortName}
           </div>
           <span className="text-gray-400 font-semibold">vs</span>
           <div
             className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-black text-xs"
             style={{
-              backgroundColor: teams.find((t) => t.id === form.awayTeamId)
+              backgroundColor: teams.find((t) => String(t.id) === form.awayTeamId)
                 ?.color,
             }}
           >
-            {teams.find((t) => t.id === form.awayTeamId)?.shortName}
+            {teams.find((t) => String(t.id) === form.awayTeamId)?.shortName}
           </div>
           <span className="text-gray-500 text-xs ml-auto">
             M{form.matchNumber} · Leg {form.leg}

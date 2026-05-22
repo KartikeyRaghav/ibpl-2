@@ -5,7 +5,7 @@ import { recalculateStandings } from "@/lib/standings";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ id: number }> },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
   const user = verifyToken(

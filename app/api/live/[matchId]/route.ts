@@ -5,7 +5,7 @@ import { z } from "zod";
 // ─── GET: Fetch live match state (used for polling) ───────────────────────────
 export async function GET(
   _req: NextRequest,
-  { params }: { params: Promise<{ matchId: number }> },
+  { params }: { params: Promise<{ matchId: string }> },
 ) {
   try {
     const { matchId } = await params;
@@ -68,7 +68,7 @@ const scoreEventSchema = z.object({
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ matchId: number }> },
+  { params }: { params: Promise<{ matchId: string }> },
 ) {
   try {
     const body = await req.json();
