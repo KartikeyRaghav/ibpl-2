@@ -1,13 +1,12 @@
 import Link from "next/link";
-import { Team, Match } from "@/types";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { StatusBadge, PositionBadge } from "@/components/ui/Badge";
-import { getInitials, formatDate, POSITION_LABELS } from "@/lib/utils";
-import { cn } from "@/lib/utils";
+import { cn, getInitials, formatDate } from "@/lib/utils";
 
 export function TeamDetail({ team }: { team: any }) {
   const standing = team.standing;
-  const allMatches: Match[] = [
+
+  const allMatches = [
     ...(team.homeMatches || []),
     ...(team.awayMatches || []),
   ].sort(
@@ -15,7 +14,6 @@ export function TeamDetail({ team }: { team: any }) {
       new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime(),
   );
 
-  // Player stats aggregation
   const playersWithStats = (team.players || [])
     .map((p: any) => ({
       ...p,
@@ -38,7 +36,9 @@ export function TeamDetail({ team }: { team: any }) {
     }))
     .sort((a: any, b: any) => b.totalPoints - a.totalPoints);
 
-  const captain = team.players?.find((p: any) => p.id === team.captainId);
+  const captain = (team.players || []).find(
+    (p: any) => p.id === team.captainId,
+  );
 
   return (
     <div className="space-y-6">
@@ -53,9 +53,9 @@ export function TeamDetail({ team }: { team: any }) {
           </div>
           <div>
             <h1 className="font-black text-3xl text-white">{team.name}</h1>
-            <div className="text-gray-500 text-sm mt-1">
+            <div className="text-gray-500 text-sm mt-1 space-x-3">
               {team.coach && <span>Coach: {team.coach}</span>}
-              {captain && <span className="ml-3">Captain: {captain.name}</span>}
+              {captain && <span>Captain: {captain.name}</span>}
             </div>
           </div>
         </div>
@@ -75,12 +75,12 @@ export function TeamDetail({ team }: { team: any }) {
               },
               {
                 label: "Points",
-                value: standing.points,
+                value: String(standing.points),
                 color: "text-orange-400",
               },
               {
                 label: "Pts For",
-                value: standing.pointsFor,
+                value: String(standing.pointsFor),
                 color: "text-green-400",
               },
               {
@@ -88,7 +88,7 @@ export function TeamDetail({ team }: { team: any }) {
                 value:
                   standing.pointDiff > 0
                     ? `+${standing.pointDiff}`
-                    : standing.pointDiff,
+                    : String(standing.pointDiff),
                 color:
                   standing.pointDiff >= 0 ? "text-green-400" : "text-red-400",
               },
@@ -116,27 +116,21 @@ export function TeamDetail({ team }: { team: any }) {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-800/50">
-                <th className="px-4 py-2 text-left text-gray-500 font-semibold text-xs uppercase">
-                  #
-                </th>
-                <th className="px-4 py-2 text-left text-gray-500 font-semibold text-xs uppercase">
-                  Player
-                </th>
-                <th className="px-3 py-2 text-left text-gray-500 font-semibold text-xs uppercase">
-                  Position
-                </th>
-                <th className="px-3 py-2 text-center text-gray-500 font-semibold text-xs uppercase">
-                  GP
-                </th>
-                <th className="px-3 py-2 text-center text-gray-500 font-semibold text-xs uppercase">
-                  PTS
-                </th>
-                <th className="px-3 py-2 text-center text-gray-500 font-semibold text-xs uppercase">
-                  PPG
-                </th>
-                <th className="px-3 py-2 text-center text-gray-500 font-semibold text-xs uppercase">
-                  Fouls
-                </th>
+                {["#", "Player", "Position", "GP", "PTS", "PPG", "Fouls"].map(
+                  (h) => (
+                    <th
+                      key={h}
+                      className={cn(
+                        "px-4 py-2 text-gray-500 font-semibold text-xs uppercase",
+                        h === "Player" || h === "#" || h === "Position"
+                          ? "text-left"
+                          : "text-center",
+                      )}
+                    >
+                      {h}
+                    </th>
+                  ),
+                )}
               </tr>
             </thead>
             <tbody>
@@ -157,7 +151,7 @@ export function TeamDetail({ team }: { team: any }) {
                       className="font-semibold text-white hover:text-orange-400 transition-colors flex items-center gap-2"
                     >
                       <div
-                        className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-black"
+                        className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-black shrink-0"
                         style={{ backgroundColor: team.color }}
                       >
                         {getInitials(p.name)}
@@ -182,6 +176,16 @@ export function TeamDetail({ team }: { team: any }) {
                   </td>
                 </tr>
               ))}
+              {playersWithStats.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={7}
+                    className="px-4 py-8 text-center text-gray-600 text-sm"
+                  >
+                    No players in roster yet.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -195,7 +199,7 @@ export function TeamDetail({ team }: { team: any }) {
         <CardBody className="space-y-2">
           {allMatches.length === 0 && (
             <div className="text-gray-600 text-sm text-center py-4">
-              No matches yet
+              No matches scheduled yet.
             </div>
           )}
           {allMatches.map((m: any) => {
@@ -214,7 +218,7 @@ export function TeamDetail({ team }: { team: any }) {
               >
                 <div
                   className={cn(
-                    "w-6 h-6 rounded-full flex items-center justify-center text-xs font-black",
+                    "w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shrink-0",
                     won
                       ? "bg-green-500/20 text-green-400"
                       : lost
@@ -222,11 +226,11 @@ export function TeamDetail({ team }: { team: any }) {
                         : "bg-gray-800 text-gray-500",
                   )}
                 >
-                  {won ? "W" : lost ? "L" : "—"}
+                  {m.status === "FINISHED" ? (won ? "W" : "L") : "—"}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-white text-sm font-semibold">
-                    {isHome ? "vs" : "@"} {opponent.name}
+                    {isHome ? "vs" : "@"} {opponent?.name ?? "TBD"}
                     <span className="text-gray-600 text-xs ml-2">
                       Leg {m.leg}
                     </span>
@@ -235,7 +239,7 @@ export function TeamDetail({ team }: { team: any }) {
                     {formatDate(m.scheduledAt)} · {m.venue}
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-right shrink-0">
                   {m.status !== "UPCOMING" ? (
                     <div className="font-black text-white">
                       {teamScore} – {oppScore}

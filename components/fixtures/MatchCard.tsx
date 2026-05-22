@@ -1,16 +1,22 @@
 import Link from "next/link";
 import { Match } from "@/types";
 import { StatusBadge, TeamDot } from "@/components/ui/Badge";
-import { formatDate, formatTime } from "@/lib/utils";
+import { formatDate, formatTime, formatDateTime } from "@/lib/utils";
 
 export function MatchCard({ match }: { match: Match }) {
   const isLive = match.status === "LIVE";
   const isFinished = match.status === "FINISHED";
+  const isUpcoming = match.status === "UPCOMING";
 
   return (
     <Link href={`/fixtures/${match.id}`} className="block">
       <div
-        className={`border rounded-xl p-4 hover:border-orange-500/50 transition-all group ${isLive ? "border-red-700/50 bg-red-950/10" : "border-gray-800 bg-gray-900"}`}
+        className={[
+          "border rounded-xl p-4 transition-all group",
+          isLive
+            ? "border-red-700/50 bg-red-950/10 hover:border-red-500/60"
+            : "border-gray-800 bg-gray-900 hover:border-orange-500/50",
+        ].join(" ")}
       >
         {/* Meta row */}
         <div className="flex items-center justify-between mb-3">
@@ -23,15 +29,15 @@ export function MatchCard({ match }: { match: Match }) {
             )}
           </div>
           <div className="text-gray-600 text-xs">
-            {isFinished || isLive
-              ? formatDate(match.scheduledAt)
-              : formatDateTime(match.scheduledAt)}
+            {isUpcoming
+              ? formatDateTime(match.scheduledAt)
+              : formatDate(match.scheduledAt)}
           </div>
         </div>
 
         {/* Teams & score */}
         <div className="flex items-center gap-3">
-          {/* Home */}
+          {/* Home team */}
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <TeamDot
               color={match.homeTeam.color}
@@ -50,9 +56,11 @@ export function MatchCard({ match }: { match: Match }) {
           {/* Score / Time */}
           <div className="text-center px-2 shrink-0">
             {isFinished || isLive ? (
-              <>
+              <div>
                 <div
-                  className={`font-black text-2xl ${isLive ? "text-red-400" : "text-white"}`}
+                  className={`font-black text-2xl ${
+                    isLive ? "text-red-400" : "text-white"
+                  }`}
                 >
                   {match.homeScore} – {match.awayScore}
                 </div>
@@ -64,7 +72,7 @@ export function MatchCard({ match }: { match: Match }) {
                     wins
                   </div>
                 )}
-              </>
+              </div>
             ) : (
               <div className="text-gray-500">
                 <div className="text-lg font-bold">
@@ -75,7 +83,7 @@ export function MatchCard({ match }: { match: Match }) {
             )}
           </div>
 
-          {/* Away */}
+          {/* Away team */}
           <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
             <div className="text-right min-w-0">
               <div className="font-bold text-white text-sm truncate">
@@ -95,15 +103,11 @@ export function MatchCard({ match }: { match: Match }) {
           📍 {match.venue}
           {isLive && (
             <span className="ml-auto text-red-400 text-xs font-bold animate-pulse">
-              Updating live →
+              Live →
             </span>
           )}
         </div>
       </div>
     </Link>
   );
-}
-
-function formatDateTime(str: string) {
-  return `${formatDate(str)}, ${formatTime(str)}`;
 }

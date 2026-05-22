@@ -1,5 +1,4 @@
 "use client";
-
 import { useRouter, useSearchParams } from "next/navigation";
 import { Team } from "@/types";
 import { cn } from "@/lib/utils";

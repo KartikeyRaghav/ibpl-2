@@ -1,5 +1,3 @@
-// src/types/index.ts
-
 export type Role = "ADMIN" | "VIEWER";
 export type MatchStatus = "UPCOMING" | "LIVE" | "FINISHED" | "CANCELLED";
 export type Position = "PG" | "SG" | "SF" | "PF" | "C";

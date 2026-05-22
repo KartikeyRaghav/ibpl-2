@@ -18,7 +18,9 @@ export default async function TeamsPage() {
     <div className="max-w-5xl mx-auto px-4 py-8">
       <div className="mb-6">
         <h1 className="font-black text-3xl text-white">Teams</h1>
-        <p className="text-gray-500 text-sm mt-1">{teams.length} teams competing in IBPL Season 1</p>
+        <p className="text-gray-500 text-sm mt-1">
+          {teams.length} teams competing in IBPL Season 1
+        </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
