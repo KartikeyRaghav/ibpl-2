@@ -176,7 +176,7 @@ export async function POST(req: NextRequest) {
 
     // Push real-time update via Pusher
     await pusherServer.trigger(
-      CHANNELS.match(data.matchId),
+      CHANNELS.match(Number(data.matchId)),
       EVENTS.scoreUpdate,
       {
         matchId: Number(data.matchId),
