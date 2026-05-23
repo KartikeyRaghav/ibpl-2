@@ -5,7 +5,7 @@ import { recalculateStandings } from "@/lib/standings";
 import { z } from "zod";
 
 const liveUpdateSchema = z.object({
-  matchId: z.int(),
+  matchId: z.string(),
   teamSide: z.enum(["home", "away"]),
   eventType: z.enum([
     "TWO_POINTER",
@@ -16,7 +16,7 @@ const liveUpdateSchema = z.object({
     "TIMEOUT",
     "QUARTER_END",
   ]),
-  playerId: z.int().optional(),
+  playerId: z.string().optional(),
   quarter: z.number().int().min(1).max(4),
   minute: z.number().min(0).max(10),
 });

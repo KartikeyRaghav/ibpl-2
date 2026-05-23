@@ -6,7 +6,7 @@ import { z } from "zod";
 const scoreSchema = z.object({
   teamSide: z.enum(["home", "away"]),
   points: z.number().min(1).max(3),
-  playerId: z.int().optional(),
+  playerId: z.string().optional(),
   eventType: z.enum(["TWO_POINTER", "THREE_POINTER", "FREE_THROW"]),
   quarter: z.number().min(1).max(4),
   minute: z.number().min(0).max(10),
@@ -14,7 +14,7 @@ const scoreSchema = z.object({
 
 const foulSchema = z.object({
   teamSide: z.enum(["home", "away"]),
-  playerId: z.int(),
+  playerId: z.string(),
   eventType: z.enum(["FOUL", "TECHNICAL_FOUL", "UNSPORTSMANLIKE_FOUL"]),
   quarter: z.number().min(1).max(4),
   minute: z.number().min(0).max(10),

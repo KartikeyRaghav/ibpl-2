@@ -49,8 +49,8 @@ export async function GET(
 // ─── POST: Add a scoring event ────────────────────────────────────────────────
 const scoreEventSchema = z.object({
   action: z.enum(["score", "foul", "quarter_end", "undo_last"]),
-  teamId: z.int().optional(),
-  playerId: z.int().optional(),
+  teamId: z.string().optional(),
+  playerId: z.string().optional(),
   type: z
     .enum([
       "TWO_POINTER",
@@ -98,7 +98,7 @@ export async function POST(
       payload.playerId
     ) {
       const pts = pointsMap[payload.type] ?? 0;
-      const isHome = match.homeTeamId === payload.teamId;
+      const isHome = String(match.homeTeamId) === payload.teamId;
 
       // Update match total score
       await prisma.match.update({
