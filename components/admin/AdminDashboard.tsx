@@ -226,10 +226,10 @@ function OverviewTab({
               className="flex items-center gap-3 px-4 py-3 border-b border-gray-800/50 last:border-0"
             >
               <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-black text-xs shrink-0"
-                style={{ backgroundColor: t.color }}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-black text-xs shrink-0 overflow-hidden"
+                style={{ backgroundColor: "white" }}
               >
-                {t.shortName}
+                <img src={t.logoUrl!}/>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-white text-sm font-semibold truncate">
