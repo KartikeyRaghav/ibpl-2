@@ -29,16 +29,18 @@ export function StatusBadge({ status }: { status: MatchStatus }) {
 export function TeamDot({
   color,
   shortName,
+  logoUrl,
 }: {
   color: string;
   shortName: string;
+  logoUrl?: string;
 }) {
   return (
     <div
-      className="w-8 h-8 rounded-full flex items-center justify-center text-white font-black text-xs shrink-0"
-      style={{ backgroundColor: color }}
+      className="w-8 h-8 rounded-full flex items-center justify-center text-white font-black text-xs shrink-0 overflow-hidden"
+      style={{ backgroundColor: logoUrl ? "white" : color }}
     >
-      {shortName}
+      {logoUrl ? <img src={logoUrl} className="rounded-xl" /> : shortName}
     </div>
   );
 }

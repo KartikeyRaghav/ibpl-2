@@ -136,6 +136,7 @@ export function LiveScorePanel({ match, onUpdate }: Props) {
             <TeamDot
               color={match.homeTeam.color}
               shortName={match.homeTeam.shortName}
+              logoUrl={match.homeTeam.logoUrl!}
             />
             <div className="mt-1 text-white font-bold text-xs sm:text-sm truncate">
               {match.homeTeam.name}
@@ -167,6 +168,7 @@ export function LiveScorePanel({ match, onUpdate }: Props) {
             <TeamDot
               color={match.awayTeam.color}
               shortName={match.awayTeam.shortName}
+              logoUrl={match.awayTeam.logoUrl!}
             />
             <div className="mt-1 text-white font-bold text-xs sm:text-sm truncate">
               {match.awayTeam.name}

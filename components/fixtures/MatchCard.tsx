@@ -42,6 +42,7 @@ export function MatchCard({ match }: { match: Match }) {
             <TeamDot
               color={match.homeTeam.color}
               shortName={match.homeTeam.shortName}
+              logoUrl={match.homeTeam.logoUrl!}
             />
             <div className="min-w-0">
               <div className="font-bold text-white text-xs sm:text-sm truncate">
@@ -96,6 +97,7 @@ export function MatchCard({ match }: { match: Match }) {
             <TeamDot
               color={match.awayTeam.color}
               shortName={match.awayTeam.shortName}
+              logoUrl={match.awayTeam.logoUrl!}
             />
           </div>
         </div>

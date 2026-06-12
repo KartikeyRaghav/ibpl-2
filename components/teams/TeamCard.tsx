@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Team } from "@/types";
-import { getInitials } from "@/lib/utils";
 
 export function TeamCard({ team }: { team: Team }) {
   const standing = team.standing;
@@ -10,7 +9,7 @@ export function TeamCard({ team }: { team: Team }) {
         {/* Logo */}
         <div
           className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center font-black text-xl sm:text-2xl text-white mb-3 sm:mb-4 border-2 border-gray-700"
-          style={{ backgroundColor: team.color }}
+          style={{ backgroundColor: "white" }}
         >
           <img src={team.logoUrl!} className="rounded-xl" />
         </div>

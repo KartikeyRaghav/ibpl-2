@@ -47,7 +47,7 @@ export function TeamDetail({ team }: { team: any }) {
         <div className="flex items-center gap-5 mb-6">
           <div
             className="w-20 h-20 rounded-2xl flex items-center justify-center font-black text-3xl text-white border-2 border-gray-700"
-            style={{ backgroundColor: team.color }}
+            style={{ backgroundColor: "white" }}
           >
             <img src={team.logoUrl!} className="rounded-xl" />
           </div>

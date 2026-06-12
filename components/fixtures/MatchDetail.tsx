@@ -67,6 +67,7 @@ export function MatchDetail({ matchId }: { matchId: number }) {
               <TeamDot
                 color={match.homeTeam.color}
                 shortName={match.homeTeam.shortName}
+                logoUrl={match.homeTeam.logoUrl!}
               />
               <div className="font-black text-white text-lg">
                 {match.homeTeam.name}
@@ -107,6 +108,7 @@ export function MatchDetail({ matchId }: { matchId: number }) {
               <TeamDot
                 color={match.awayTeam.color}
                 shortName={match.awayTeam.shortName}
+                logoUrl={match.awayTeam.logoUrl!}
               />
               <div className="font-black text-white text-lg">
                 {match.awayTeam.name}

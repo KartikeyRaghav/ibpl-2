@@ -10,8 +10,8 @@ export function HeroSection({
       <div className="absolute top-0 right-0 w-64 sm:w-96 h-64 sm:h-96 bg-orange-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-48 sm:w-64 h-48 sm:h-64 bg-red-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none" />
 
-      <div className="relative max-w-7xl mx-auto px-4 py-10 sm:py-14 md:py-20">
-        <div className="max-w-2xl">
+      <div className="relative mx-auto max-w-7xl px-4 py-10 sm:py-14 md:py-20 flex flex-col md:flex-row justify-between items-center">
+        <div className="max-w-2xl flex-1">
           <div className="inline-flex items-center gap-2 bg-orange-500/20 text-orange-400 text-xs font-bold px-3 py-1 rounded-full border border-orange-500/30 mb-4">
             🏀 {settings?.name ?? "IBPL Season 1"} · Double Round Robin
           </div>
@@ -49,6 +49,9 @@ export function HeroSection({
               </div>
             ))}
           </div>
+        </div>
+        <div className="mt-5 md:mt-0">
+          <img src={"/Logo.png"} className="w-[80%] mx-auto"/>
         </div>
       </div>
     </section>

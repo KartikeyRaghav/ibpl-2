@@ -21,6 +21,7 @@ export function LiveMatchBanner({ match }: { match: Match }) {
             <TeamDot
               color={match.homeTeam.color}
               shortName={match.homeTeam.shortName}
+              logoUrl={match.homeTeam.logoUrl!}
             />
             <div>
               <div className="font-bold text-white text-sm">
@@ -49,6 +50,7 @@ export function LiveMatchBanner({ match }: { match: Match }) {
             <TeamDot
               color={match.awayTeam.color}
               shortName={match.awayTeam.shortName}
+              logoUrl={match.awayTeam.logoUrl!}
             />
           </div>
         </div>

@@ -94,6 +94,7 @@ export function AdminMatchManager({
                     <TeamDot
                       color={match.homeTeam.color}
                       shortName={match.homeTeam.shortName}
+                      logoUrl={match.homeTeam.logoUrl!}
                     />
                     <span className="font-bold text-white text-xs sm:text-sm truncate">
                       {match.homeTeam.name}
@@ -128,6 +129,7 @@ export function AdminMatchManager({
                     <TeamDot
                       color={match.awayTeam.color}
                       shortName={match.awayTeam.shortName}
+                      logoUrl={match.awayTeam.logoUrl!}
                     />
                   </div>
                 </div>

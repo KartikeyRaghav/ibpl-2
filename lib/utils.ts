@@ -30,6 +30,7 @@ export function getInitials(name: string): string {
     .map((n) => n[0])
     .join("")
     .toUpperCase()
+    .slice(1,3);
 }
 
 export const POSITION_LABELS: Record<string, string> = {
