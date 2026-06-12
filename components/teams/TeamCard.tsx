@@ -12,7 +12,7 @@ export function TeamCard({ team }: { team: Team }) {
           className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center font-black text-xl sm:text-2xl text-white mb-3 sm:mb-4 border-2 border-gray-700"
           style={{ backgroundColor: team.color }}
         >
-          {getInitials(team.name)}
+          <img src={team.logoUrl!} className="rounded-xl" />
         </div>
 
         <div className="font-black text-white text-lg sm:text-xl group-hover:text-orange-400 transition-colors">

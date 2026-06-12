@@ -59,7 +59,7 @@ export function StandingsTable({ standings }: { standings: TeamStanding[] }) {
             />
             <span className="font-bold text-white truncate text-xs sm:text-sm">
               {/* Show short name on mobile */}
-              <span className="sm:hidden">{s.team?.name?.split(" ")[0]}</span>
+              <span className="sm:hidden">{s.team?.name}</span>
               <span className="hidden sm:inline">{s.team?.name}</span>
             </span>
           </div>

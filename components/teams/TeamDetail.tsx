@@ -49,7 +49,7 @@ export function TeamDetail({ team }: { team: any }) {
             className="w-20 h-20 rounded-2xl flex items-center justify-center font-black text-3xl text-white border-2 border-gray-700"
             style={{ backgroundColor: team.color }}
           >
-            {getInitials(team.name)}
+            <img src={team.logoUrl!} className="rounded-xl" />
           </div>
           <div>
             <h1 className="font-black text-3xl text-white">{team.name}</h1>

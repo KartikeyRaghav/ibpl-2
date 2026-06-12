@@ -42,8 +42,9 @@ export function Navbar() {
               className="flex items-center gap-2 shrink-0"
               onClick={() => setOpen(false)}
             >
-              <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center">
-                <Trophy className="w-4 h-4 text-white" />
+              <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center">
+                {/* <Trophy className="w-4 h-4 text-white" /> */}
+                <img src={"/Logo.png"} className="rounded"/>
               </div>
               <div className="leading-none">
                 <span className="font-black text-white text-sm tracking-tight">

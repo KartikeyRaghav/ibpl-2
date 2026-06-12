@@ -24,7 +24,7 @@ export function HeroSection({
             Premier League
           </h1>
           <p className="text-gray-400 text-sm sm:text-base md:text-lg mb-8">
-            4 elite teams. 42 players. 12 intense matches.
+            4 elite teams. 40 players. 12 intense matches.
             <br className="hidden sm:block" />
             Only one champion.
           </p>
@@ -32,7 +32,7 @@ export function HeroSection({
           <div className="grid grid-cols-4 gap-2 sm:gap-3">
             {[
               { val: "4", label: "Teams" },
-              { val: "42", label: "Players" },
+              { val: "40", label: "Players" },
               { val: "12", label: "Matches" },
               { val: "2026", label: "Season" },
             ].map(({ val, label }) => (
