@@ -17,11 +17,11 @@ export function HeroSection({
           </div>
 
           <h1 className="font-black text-4xl sm:text-5xl md:text-6xl text-white leading-none mb-3">
-            IIT Indore
+            Intra IITI
             <br />
-            <span className="text-orange-500">Basketball</span>
+            <span className="text-orange-500">Staff</span>
             <br />
-            Premier League
+            Meet
           </h1>
           <p className="text-gray-400 text-sm sm:text-base md:text-lg mb-8">
             4 elite teams. 40 players. 12 intense matches.

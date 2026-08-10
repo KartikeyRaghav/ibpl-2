@@ -18,7 +18,7 @@ export default function LoginPage() {
           </div>
           <h1 className="font-black text-2xl text-white">IBPL Admin Portal</h1>
           <p className="text-gray-500 text-sm mt-1">
-            IIT Indore Basketball Premier League
+            Inta IITI Staff Meet
           </p>
         </div>
 

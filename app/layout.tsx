@@ -17,9 +17,9 @@ const barlowCondensed = Barlow_Condensed({
 });
 
 export const metadata: Metadata = {
-  title: "IBPL — IIT Indore Basketball Premier League",
+  title: "Intra IITI Staff Meet",
   description:
-    "Official tournament management platform for the IIT Indore Basketball Premier League",
+    "Official tournament management platform for the IIT Indore Staff Meet",
 };
 
 export default function RootLayout({
